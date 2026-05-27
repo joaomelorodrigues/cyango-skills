@@ -31,7 +31,7 @@ Each object is one `IAction`. Combine `type` with the right companion fields (`t
 | `duration` / `ease` | Delay, tween timing (ms + GSAP ease name). |
 | `sceneTransition` | `TransitionType` when changing scenes. |
 | `modal` | Open/close modal payloads. |
-| `customCode` | `{ code, errorMessages? }` — custom execution. |
+| `customCode` | `{ code, errorMessages? }` — custom execution. Before writing or editing it, use the custom-code files listed from `SKILL.md`. |
 | `conditions` | `IActionConditions` — all must pass. |
 | `entityProperties` | Property paths → values. Used with `CHANGE_ENTITY_PROPERTY`. |
 | `targetEntitiesIds` | Entities affected (show/hide, media, trigger). |
@@ -118,7 +118,7 @@ Notes for `CENTER_GPS`:
 | Type | Description | Needs |
 |------|-------------|--------|
 | `DELAY` | Wait for a duration before subsequent steps. | `duration` |
-| `CUSTOM_CODE` | Run sandboxed story-player code with a `customCode` payload. Use the custom-code reference from `SKILL.md`; do not infer syntax from this table alone. | `customCode` |
+| `CUSTOM_CODE` | Run sandboxed story-player code with a `customCode` payload. Use the custom-code files listed from `SKILL.md`; do not infer syntax or `cyango.*` APIs from this table alone. | `customCode` |
 | `OPEN_PRODUCT` | Open an XR store product. | — |
 | `INSTANTIATE_PREFAB` | Instantiate a prefab; `entityProperties` can act as overrides. | `prefabId` |
 | `NONE` | No operation. | — |

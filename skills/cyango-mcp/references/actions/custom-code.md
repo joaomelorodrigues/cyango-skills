@@ -1,21 +1,36 @@
 # Custom Code
 
-Cyango has two different custom-code surfaces. Pick the right one before patching:
+**This file covers:** which surface to use, MCP patch shapes, syntax rules, prefab bundling requirements, Story Head/Footer code, and verification steps.
+
+Custom code is high-risk for MCP agents because the useful APIs are Cyango-specific runtime injections, not ordinary JavaScript. Do not guess method names or access patterns — use the runtime API reference for everything available in the sandbox.
+
+## Choose the correct surface
+
+Cyango has two different custom-code surfaces:
 
 | Surface | Stored at | Runtime scope | MCP status |
 |---------|-----------|---------------|------------|
 | `CUSTOM_CODE` action | Entity `actions.currentValue` or scene `sceneActions` | Receives `cyango` (`storyState`, `uiState`, `timelineState`, `types`, `utils`) | Writable through current MCP tools |
 | Story Head/Footer code | `settings.customHeadCode` / `settings.customFooterCode` | No `cyango`; sandbox utilities only | Inspectable with `get_story_state`; current MCP has no story-settings write tool |
 
-## Custom Code actions
-
 Use `CUSTOM_CODE` actions for runtime interactions: click handlers, scene lifecycle hooks, timeline hooks, prefab spawning, state changes, and entity/scene updates during playback.
+
+Use Head/Footer code for story-wide script-style setup such as analytics or third-party bootstrapping. Head/Footer snippets cannot access `cyango`.
+
+Before editing or discussing Story Head/Footer code:
+
+1. Read this file.
+2. Do not use the `cyango` runtime API reference as available scope; Head/Footer has no `cyango`.
+3. Check current MCP capabilities. If there is still no story-settings update tool, report that MCP can inspect but not patch Head/Footer code.
+
+## Custom Code action patching
 
 ### Entity action patch
 
 1. Fetch the existing entity first with `get_entity`; preserve unrelated actions.
 2. Replace the full `actions.currentValue` array with `update_entities`.
 3. Use `eventType` appropriate to the trigger (`ON_CLICK`, `ON_ENTITY_READY`, etc.).
+4. Put JavaScript in `customCode.code` and keep `customCode.errorMessages` as an array.
 
 ```json
 {
@@ -30,7 +45,7 @@ Use `CUSTOM_CODE` actions for runtime interactions: click handlers, scene lifecy
           "type": "CUSTOM_CODE",
           "eventType": "ON_CLICK",
           "customCode": {
-            "code": "cyango.uiState.openUrl('https://example.com');",
+            "code": "await cyango.uiState.openUrl('https://example.com');",
             "errorMessages": []
           }
         }
@@ -42,7 +57,7 @@ Use `CUSTOM_CODE` actions for runtime interactions: click handlers, scene lifecy
 
 ### Scene action patch
 
-Use `update_scenes` with `propertyPath: "sceneActions"` and replace the full scene action array.
+Use `update_scenes` with `propertyPath: "sceneActions"` and replace the full scene action array. Fetch the existing scene first and preserve unrelated scene actions.
 
 ```json
 {
@@ -67,9 +82,9 @@ Use `update_scenes` with `propertyPath: "sceneActions"` and replace the full sce
 }
 ```
 
-### Language and runtime syntax
+## Language and runtime syntax
 
-Custom Code action `code` is written as **JavaScript executed inside an async function body**:
+Custom Code action `code` is written as JavaScript executed inside an async function body:
 
 - Top-level `await` works because the runtime wraps the snippet in an async IIFE.
 - `return` is valid and exits the snippet.
@@ -79,92 +94,14 @@ Custom Code action `code` is written as **JavaScript executed inside an async fu
 
 Limited TypeScript syntax is supported for `CUSTOM_CODE` actions only:
 
-- The action runtime transpiles the code when it detects `: Type`, `interface`, or `type Foo`.
+- Runtime transpiles when it detects `: Type`, `interface`, or `type Foo`.
 - Safe TS-only syntax: simple type annotations, interfaces, and type aliases.
-- Do not rely on TS features that need module processing or imports. Runtime values must come from `cyango`, `console`, timers, literals, or values you define in the snippet.
-- Head/Footer code does **not** go through this TypeScript transpile path; write Head/Footer snippets as runnable JavaScript.
+- Do not rely on TS features that need module processing or imports. Runtime values must come from `cyango`, `console`, timers, literals, or values defined in the snippet.
+- Head/Footer code does not go through the same Cyango custom action path; write Head/Footer snippets as runnable JavaScript.
 
-The editor's Monaco field exposes type hints for `cyango`, but those are compile-time hints only. At runtime, `cyango` is an injected object for `CUSTOM_CODE` actions; it is not imported.
+The editor's Monaco field exposes type hints for `cyango`, but those are compile-time hints only. At runtime, `cyango` is injected for `CUSTOM_CODE` actions; it is not imported.
 
-### Runtime scope
-
-Custom Code actions run in the story player sandbox. They can use:
-
-- `cyango.storyState`: `activeStoryJson`, `activeSceneId`, `activeLanguage`, `setActiveScene`, `triggerAction`, `updateStoryData`, `instantiatePrefab`, XR helpers, asset helpers.
-- `cyango.uiState`: loading/camera/breakpoint state, `openUrl`, system modal helpers.
-- `cyango.timelineState`: timeline mode, elapsed time, mute state, media controls.
-- `cyango.types`: enums such as `ActionType`, `EventType`, `EntityTypes`, `SceneTypes`, `PlayingModes`.
-- `cyango.utils`: `getEntityById`, `getEntityByName`, `getActiveScene`, `thisEntity`, `globalVars`, `setGlobalVar`, `getGlobalVar`, GUI scroll helpers, `instantiatePrefab`, `detectDeviceType`, `detectBrowser`, `getWindowLocation`, `getNavigator`.
-
-### Sandbox globals and blocked browser APIs
-
-Available globals:
-
-- `cyango` for `CUSTOM_CODE` actions only.
-- `console.log`, `console.warn`, `console.error`, `console.info`; output is namespaced as `[plugin> custom-code]`.
-- `setTimeout`, `clearTimeout`, `setInterval`, `clearInterval`; delays are capped at 60000 ms.
-- Locals, functions, classes, arrays, objects, promises, and normal JavaScript built-ins.
-
-Shadowed/blocked globals:
-
-- `window`
-- `document`
-- `sessionStorage`
-- `location`
-- `navigator`
-- `history`
-- `XMLHttpRequest`
-- `WebSocket`
-- `eval`
-- `Function`
-- `globalThis`
-- `self`
-
-Use the exposed helpers instead of blocked globals:
-
-- Use `cyango.utils.getNavigator()` instead of `navigator`.
-- Use `cyango.utils.getWindowLocation()` instead of `location`.
-- There is no direct `document` replacement; if the task needs DOM manipulation, explain that this sandbox is not intended for direct DOM access.
-
-Current runtime does not shadow `fetch` or `localStorage`, but do not rely on them unless the user explicitly needs that behavior; prefer Cyango state/actions/helpers for story interactions.
-
-### Common snippets
-
-Set a persistent runtime variable:
-
-```js
-const count = (cyango.utils.getGlobalVar('count') ?? 0) + 1;
-cyango.utils.setGlobalVar('count', count);
-console.log('count', count);
-```
-
-Change scene:
-
-```js
-cyango.storyState.setActiveScene('target-scene-id');
-```
-
-Patch story data at runtime:
-
-```js
-cyango.storyState.updateStoryData([
-  {
-    type: 'entities',
-    entityIds: ['entity-id'],
-    propertyPath: 'visible.currentValue',
-    value: false
-  }
-]);
-```
-
-Instantiate a prefab from code:
-
-```js
-cyango.utils.instantiatePrefab({
-  prefabId: 'prefab-id',
-  sceneId: cyango.storyState.activeSceneId
-});
-```
+## Prefab bundling
 
 If code calls `instantiatePrefab()`, make sure the prefab is bundled in the story:
 
@@ -173,8 +110,6 @@ If code calls `instantiatePrefab()`, make sure the prefab is bundled in the stor
 - Current MCP can instantiate an existing story prefab with `instantiate_prefab`, but it cannot currently edit `settings.options.customCodePrefabIds` because that is a story-settings patch.
 
 ## Story Head/Footer code
-
-Use Head/Footer code for story-wide script-style setup such as analytics or third-party bootstrapping.
 
 Storage shape:
 
@@ -197,7 +132,8 @@ Runtime behavior:
 
 - `customHeadCode.code` runs when the story head component applies custom head code.
 - `customFooterCode.code` runs when the story footer component applies custom footer code.
-- These snippets are evaluated by the same sandbox helper but **without** the `cyango` namespace. Do not use `cyango.storyState`, `cyango.utils`, entity IDs, scene actions, or prefab APIs here.
+- These snippets are evaluated by the same sandbox helper but without the `cyango` namespace.
+- Do not use `cyango.storyState`, `cyango.utils`, entity IDs, scene actions, prefab APIs, or custom action assumptions here.
 - Direct browser globals are blocked. `console`, safe `setTimeout` / `setInterval`, and the code's own local variables are available.
 
 Current MCP limitation:
@@ -213,4 +149,3 @@ After writing Custom Code actions:
 1. Use `get_entity` or `get_scene` to verify the action array contains the new action and preserved existing actions.
 2. Use `capture_screenshot` only for visible scene/GUI effects; custom-code errors are usually visible in the browser console, not the screenshot.
 3. If the user asks to persist the story, call `save_story` only after explicit save permission.
-
