@@ -67,6 +67,21 @@ Enum in `cyango-shared` — the string values are the runtime tokens (e.g. `magi
 
 ---
 
+## `SPLAT` takes no children
+
+A `SPLAT` is a leaf: the scene tree refuses the drop and the MCP bridge places the entity at the scene root instead. To attach labels, hotspots, colliders or a GUI panel to a scan, wrap them together:
+
+```
+GROUP                    ← position/rotate the whole assembly here
+  ├── SPLAT              ← the scan
+  ├── GUI_CONTAINER      ← label, sibling of the splat
+  └── CUSTOM_3D_MODEL    ← collision mesh, sibling of the splat
+```
+
+Splat collision meshes already follow this pattern — the worker emits a separate collider GLB entity rather than a child of the splat.
+
+---
+
 ## Scale: arbitrary authored units — models may appear invisible or giant
 
 GLB/glTF files have no enforced unit scale. A model exported in millimetres sits at `scale [1,1,1]` but is 0.001 m in world space — invisible from the default camera. One exported at 100 m swamps the entire scene.

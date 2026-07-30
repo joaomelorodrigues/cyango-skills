@@ -19,6 +19,8 @@ Every entity either sits at the scene root or is a child of another entity, cont
 
 Scene-root entities use world coordinates directly. Child entities use **local** coordinates — their position, rotation, and scale are all expressed relative to the parent, not the world origin.
 
+**The parent must be a type that accepts children**: `GROUP`, `GROUP_BOX`, `PRIMITIVE_*`, `GUI_CONTAINER`, `GUI_SCREEN`, `FLAT_IMAGE`, `FLAT_VIDEO`, `TEXT_3D*`, `CAMERA`, `PLAYER`, `WEBCAM`, `FACE_MESH`. Everything else is a leaf — a `SPLAT`, model, light, panorama or audio emitter never takes children, and asking for one lands the entity at the scene root instead. Wrap the pieces in a `GROUP` and make them siblings. See [which types accept children](../references/entities/common.md#which-types-accept-children).
+
 ## Reparenting existing entities
 
 Use `update_entities` for reparenting after create:

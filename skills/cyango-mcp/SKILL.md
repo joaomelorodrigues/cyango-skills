@@ -3,7 +3,7 @@ name: cyango-mcp
 description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, Lottie/sprite animation, splats, lights and shadows, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values.'
 ---
 
-**@cyango-tools/skills version:** `1.3.1`
+**@cyango-tools/skills version:** `1.3.3`
 
 # Cyango MCP Skill
 
@@ -21,14 +21,15 @@ Copy payload shapes from [payloads.md](references/payloads.md) rather than assem
 4. **Read [non-gui-defaults.md](references/entities/non-gui-defaults.md) for every non-GUI type** in the change set before assuming what a created entity contains.
 5. **Roots are world space, children are local to the parent** — [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md).
 6. **Reparent by patching `parentEntityId`** (`""` for scene root). Never patch `children`.
-7. **Size primitives with `scale`.** `geometry` fields are export metadata and do not resize the viewport mesh.
-8. **Size world-space GUI with GUI `width` / `height`**, keeping `scale` at `[1, 1, 1]`. Never micro-scale a transform to fake pixel units.
-9. **Omit `scale` for unknown GLBs** in `insert_assets`; passing `[1,1,1]` suppresses the editor's own normalisation.
-10. **Icons are `GUI_ICON`** with a Lucide `iconSrc` (`"X"`, `"ChevronLeft"`, `"Play"`), sized by `iconSize`. Never a glyph character in a `GUI_TEXT`.
-11. **Let the editor infer entity type from an asset.** Pass `forceEntityType` only for the cases listed in [assets-common.md](references/assets/assets-common.md#image-and-video-entity-types--trust-the-editor-flat_-scope). `FLAT_IMAGE` / `FLAT_VIDEO` belong inside flat scenes only — for a poster or billboard in a 3D tour use `GUI_IMAGE`, a textured `PRIMITIVE_*`, or a model.
-12. **`LOTTIE` renders through the GUI stack**, so it is sized and placed like `GUI_IMAGE` (via `gui.currentValue`) even though it has no `GUI_` prefix.
-13. **Scene switches gate entity features**: entity `physics` needs scene `physics.enabled`, light `castShadow` needs scene `shadowsEnabled`.
-14. **Reuse matching scenes and entities** instead of creating near-duplicates.
+7. **Only some types accept children.** `GROUP`, `GROUP_BOX`, `PRIMITIVE_*`, `GUI_CONTAINER`, `GUI_SCREEN`, `FLAT_IMAGE`, `FLAT_VIDEO`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CAMERA`, `PLAYER`, `WEBCAM`, `FACE_MESH` — and nothing else. `SPLAT` never takes children; pair it with companions as siblings in a `GROUP`. Parenting to a leaf lands the entity at the scene root — [common.md](references/entities/common.md#which-types-accept-children).
+8. **Size primitives with `scale`.** `geometry` fields are export metadata and do not resize the viewport mesh.
+9. **Size world-space GUI with GUI `width` / `height`**, keeping `scale` at `[1, 1, 1]`. Never micro-scale a transform to fake pixel units.
+10. **Omit `scale` for unknown GLBs** in `insert_assets`; passing `[1,1,1]` suppresses the editor's own normalisation.
+11. **Icons are `GUI_ICON`** with a Lucide `iconSrc` (`"X"`, `"ChevronLeft"`, `"Play"`), sized by `iconSize`. Never a glyph character in a `GUI_TEXT`.
+12. **Let the editor infer entity type from an asset.** Pass `forceEntityType` only for the cases listed in [assets-common.md](references/assets/assets-common.md#image-and-video-entity-types--trust-the-editor-flat_-scope). `FLAT_IMAGE` / `FLAT_VIDEO` belong inside flat scenes only — for a poster or billboard in a 3D tour use `GUI_IMAGE`, a textured `PRIMITIVE_*`, or a model.
+13. **`LOTTIE` renders through the GUI stack**, so it is sized and placed like `GUI_IMAGE` (via `gui.currentValue`) even though it has no `GUI_` prefix.
+14. **Scene switches gate entity features**: entity `physics` needs scene `physics.enabled`, light `castShadow` needs scene `shadowsEnabled`.
+15. **Reuse matching scenes and entities** instead of creating near-duplicates.
 
 Types that no longer exist: `HOTSPOT*`, `EMBED_*` entities and `LIVESTREAM_*` scenes. Older stories may still contain them; never create new ones.
 

@@ -45,6 +45,7 @@ Start here when a write "worked" but the result is wrong. Most of these fail sil
 | Lights look right, no shadows | Scene `shadowsEnabled` is off | `update_scene` → `shadowsEnabled: true` |
 | Physics bodies do not move | Scene `physics.enabled` is off | `update_scene` → `physics.enabled: true` |
 | Children render in the wrong order | Sibling sequence is layout order; re-added entities append to the end | Re-add the affected siblings in the intended order |
+| Entity landed at the scene root instead of under its parent | The requested parent is a type that cannot hold children (`SPLAT`, lights, models, panoramas, audio, HDR…) | Parent under a `GROUP` and make them siblings — [which types accept children](../references/entities/common.md#which-types-accept-children) |
 | Panorama came in as `GUI_IMAGE` | The scene already had a panorama, so inference fell through | Insert with `forceEntityType: "PANORAMA"` |
 | Asset upload rejected | Extension outside the accepted list | Check [assets-common.md](../references/assets/assets-common.md#import-workflow); convert first |
 | `remove_assets` reports `blocked` | The asset is used by a story, prefab, or bundle | Report the named scenes/stories to the user; do not retry |
