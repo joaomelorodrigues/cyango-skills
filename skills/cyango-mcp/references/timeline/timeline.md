@@ -73,6 +73,20 @@ Used inside `IAnimation<IMediaClip>` (entity `media`).
 
 ---
 
+## `animations` clips vs keyframes
+
+`animations?: IAnimation<IEntityAnimation[]>` is a different thing from keyframes: it holds **clips** that a self-animating entity plays, and the master timeline drives them.
+
+| Type | What a clip means |
+|------|-------------------|
+| `CUSTOM_3D_MODEL` | A named glTF animation clip (skeletal / node). |
+| `SPRITE` | A frame range in the spritesheet grid (`startFrame`, `endFrame`, `fps`). |
+| `LOTTIE` | A frame range of the Bodymovin document (same fields as `SPRITE`). |
+
+All three are created with one looping `"Main"` clip. Patch `animations.currentValue` with the **full clip array** — it is replaced, not merged. Details in [animated-common.md](../entities/animated/animated-common.md).
+
+---
+
 ## Quick mental model
 
 1. Scene `timeline` sets **how long** the beat is per language.

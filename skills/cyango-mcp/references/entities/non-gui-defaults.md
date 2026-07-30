@@ -20,7 +20,9 @@ MCP deep-merges these defaults when `add_entities` creates an entity. Keys you s
 
 ## Geometry + material defaults
 
-Applied to: `PRIMITIVE_*`, `FLAT_IMAGE`, `FLAT_VIDEO`, `PANORAMA*`, `HOTSPOT*`, `EMBED_*`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CUSTOM_3D_MODEL`, `SPLAT`.
+Applied to: `PRIMITIVE_*`, `FLAT_IMAGE`, `FLAT_VIDEO`, `PANORAMA*`, `SPRITE`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CUSTOM_3D_MODEL`, `SPLAT`.
+
+> `HOTSPOT*` and `EMBED_*` entity types no longer exist. Existing stories may still carry them; never create new ones.
 
 ### `geometry.currentValue` base
 
@@ -43,10 +45,14 @@ Applied to: `PRIMITIVE_*`, `FLAT_IMAGE`, `FLAT_VIDEO`, `PANORAMA*`, `HOTSPOT*`, 
 |-------|---------|
 | `materialType` | `FLAT` |
 | `color` | `"#FFFFFF"` |
+| `emissive` | `"#000000"` |
+| `transparent` | `false` |
+| `opacity` | `1` |
 | `alphaHash` | `false` |
 | `alphaToCoverage` | `false` |
 | `aoMapIntensity` | `0` |
 | `blendAlpha` | `0` |
+| `blendColor` | `"#FFFFFF"` |
 
 ### Per-type geometry overrides
 
@@ -81,6 +87,7 @@ Applied to: `AMBIENT_LIGHT`, `POINT_LIGHT`, `SPOT_LIGHT`, `DIRECTIONAL_LIGHT`, `
 | `decay` | `0` |
 | `distance` | `0` |
 | `penumbra` | `0` |
+| `castShadow` | `true` (only shadow-casting types act on it; the rest of the shadow block stays unset and falls back to per-type renderer defaults) |
 
 ### Per-type overrides
 
@@ -94,7 +101,7 @@ Applied to: `AMBIENT_LIGHT`, `POINT_LIGHT`, `SPOT_LIGHT`, `DIRECTIONAL_LIGHT`, `
 
 ## Media defaults
 
-Applied to: `AUDIO_GLOBAL`, `AUDIO_POSITIONAL`, `FLAT_VIDEO`, `PANORAMA_VIDEO`, `PANORAMA_180_VIDEO`, `TEXT_3D_VIDEO`, `EMBED_VIDEO_3D`, `GUI_VIDEO`.
+Applied to: `AUDIO_GLOBAL`, `AUDIO_POSITIONAL`, `FLAT_VIDEO`, `PANORAMA_VIDEO`, `PANORAMA_180_VIDEO`, `TEXT_3D_VIDEO`, `GUI_VIDEO`.
 
 ### `media.currentValue`
 
@@ -121,6 +128,23 @@ Applied to: `AUDIO_GLOBAL`, `AUDIO_POSITIONAL`, `FLAT_VIDEO`, `PANORAMA_VIDEO`, 
 | `noise` | `0` |
 | `reverb` | `0` |
 | `rolloffFactor` | `0` |
+
+---
+
+## Frame-animation defaults (`SPRITE`, `LOTTIE`)
+
+Both types get one looping clip in `animations.currentValue` so the animation runs as soon as the asset is bound and the timeline can drive it:
+
+| Field | Default |
+|-------|---------|
+| `id` | `clip_<uuid>` |
+| `name` | `"Main"` |
+| `loop` | `2201` (three.js `LoopRepeat`) |
+| `play` | `true` |
+
+`LOTTIE` additionally gets `lottie: { resolution: 512 }` — the raster edge in pixels, redrawn every frame. Raise it for large on-screen animations, lower it for many small ones; it is an absolute size, not a multiplier.
+
+`SPRITE` reads its grid from `spritesheet` (`cols`, `rows`, `fps`), which the editor fills in on asset drop. See [animated-common.md](animated/animated-common.md).
 
 ---
 
@@ -179,5 +203,7 @@ Applied to: `AUDIO_GLOBAL`, `AUDIO_POSITIONAL`, `FLAT_VIDEO`, `PANORAMA_VIDEO`, 
 | `HDR` | Linked asset | No environment map until asset bound |
 | `WEBCAM` | Usually nothing | Front-facing, mirrored |
 | `TEXT_3D` | `text3D.currentValue.text`, `scale` | Reads "Text" at 1× scale |
+| `LOTTIE` | Linked Lottie asset; GUI `width`/`height` on `gui.currentValue.desktop.default` | Nothing renders until a Lottie asset is bound; 512 px raster, looping "Main" clip |
+| `SPRITE` | Linked spritesheet asset; `spritesheet.cols` / `rows` / `fps` | Nothing renders until asset + grid are set |
 | `AUDIO_GLOBAL` | Linked media asset | No audio until asset bound |
 | `AUDIO_POSITIONAL` | Linked asset, `position`, `audio3D.currentValue.distance` | No sound; emitter at origin |

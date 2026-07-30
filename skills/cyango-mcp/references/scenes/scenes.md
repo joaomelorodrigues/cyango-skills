@@ -12,16 +12,28 @@ A story is an ordered list of scenes. Each scene has `entities[]`, optional `tim
 | `MODEL_VIEWER` | Camera orbits around a 3D model target. |
 | `PANORAMA_360` | Fixed camera; 360° panorama (image or video). |
 | `PANORAMA_180_SCENE` | Fixed camera; 180° panorama. |
-| `LIVESTREAM_PANORAMA` | Livestream 360° panorama. |
-| `LIVESTREAM_180_VIDEO_SCENE` | Livestream 180° video. |
-| `MAP_2D_SCENE` / `MAP_3D_SCENE` | Map scenes. |
+| `FLAT_SCENE` | Fixed camera, no orbit controls — flat media layer in front of the camera. |
+| `MAP_2D_SCENE` / `MAP_3D_SCENE` | Map scenes. `MAP_2D_SCENE` gets a top-down camera at `[0, 1000000, 0]`; `MAP_3D_SCENE` is not offered in the Studio dialog yet. |
 | `WEBCAM_SCENE` | Live webcam feed. |
-| `FACE_TRACKING_SCENE` | Face tracking. |
-| `AR_WORLD_TRACKING_SCENE` | AR world tracking. |
-| `PASSWORD_SCENE` | Password entry flow. |
-| `NOT_FOUND_SCENE` | 404 / not-found page. |
+
+Livestream scene types (`LIVESTREAM_PANORAMA`, `LIVESTREAM_180_VIDEO_SCENE`) were removed from `SceneTypes`; do not use them.
 
 Use these strings for `sceneType`; compare with `get_story_state` / `get_scene` if rejected.
+
+### What MCP seeds per scene type
+
+`add_scene(s)` mirrors Studio's `createSceneData`: every scene gets a `GUI_SCREEN` ("Screen") and a `CAMERA`, plus
+
+| Scene type | Extra entities |
+|------------|----------------|
+| `TOUR_3D` | `SKYBOX`, `AMBIENT_LIGHT` at `[10, 10, 10]` |
+| `MODEL_VIEWER` | `AMBIENT_LIGHT`, `HDR`, `sceneColor: "#f5f5f5"` |
+| `FLAT_SCENE` | `AMBIENT_LIGHT`; camera controls disabled |
+| `PANORAMA_360` / `PANORAMA_180_SCENE` | none — add the panorama entity via `insert_assets` |
+| `MAP_2D_SCENE` / `MAP_3D_SCENE` | `SKYBOX` + `MAP_2D` / `MAP_3D` |
+| `WEBCAM_SCENE` | `WEBCAM`; camera controls disabled |
+
+> **HDR caveat**: in Studio, `MODEL_VIEWER` also gets a default Poly Haven HDR **asset** bound to the `HDR` entity. The bridge's `addScenes` command carries scenes only, so an MCP-created scene has the `HDR` entity with no source. Bind an HDR asset with `insert_assets` (or tell the user to pick one) when the lighting matters.
 
 ---
 
@@ -41,6 +53,22 @@ Use these strings for `sceneType`; compare with `get_story_state` / `get_scene` 
 | `tags` | Tags for filtering / actions. |
 | `effects` | Post-processing stack (bloom, DOF, color grading, anti-aliasing). |
 | `toneMapping` | Renderer tone mapping. |
+| `title` | Localized title (`{ "en-US": "Lobby" }`) — what Studio shows when `name` is unset. |
+| `thumbnailAsset` | Scene thumbnail; `insert_assets` sets it automatically when a panorama lands in a panorama scene. |
+| `hasCustomDuration` | The timeline duration was typed by the user instead of derived from content. |
+| `hideSystemTheme` | Hide the system theme UI in this scene. |
+| `shadowsEnabled` | Turn the canvas shadow map on for this scene. Required before any light's `castShadow` produces visible shadows. |
+| `forcedQualityLevel` | `StoryQualityLevel` — pins quality while this scene is active, overriding the viewer's choice. |
+
+### `StoryQualityLevel`
+
+Numeric enum, not a string: `LOW = 0`, `MEDIUM = 1`, `HIGH = 2`, `ULTRA = 3`. Patch it as a number:
+
+```json
+{ "sceneIds": ["scene_x"], "propertyPath": "forcedQualityLevel", "value": 2 }
+```
+
+Leave it unset unless the user explicitly wants to force quality — it overrides their own quality selection on every device.
 
 ---
 

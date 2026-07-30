@@ -195,7 +195,7 @@ Properties live inside `gui.currentValue.<breakpoint>.<state>` (e.g. `desktop.de
 
 ---
 
-## Type defaults (editor rendering)
+## Type defaults
 
 These defaults describe what the **Cyango Studio editor** actually renders for each `GUI_*` type. They come from hardcoded JSX fallbacks in the editor's `GUI2D_*` components: if a key is **missing** from `gui.currentValue.<breakpoint>.<state>`, the component supplies the value below. Missing keys are **not** written back into story JSON — `get_entity` only shows what you set.
 
@@ -369,7 +369,7 @@ No default `width` / `height` in JSX — size comes from flex layout or the asse
 | Visual | Fields to set | Notes |
 |--------|---------------|-------|
 | Size | `iconSize` | Default `30`. `width` / `height` in GUI data **do not** control Lucide icon size — only `iconSize` does |
-| Which icon | `iconSrc` | Lucide icon name (e.g. `"ArrowRight"`). Invalid or empty → `ArrowRight` |
+| Which icon | `iconSrc` | Lucide icon name in PascalCase (e.g. `"X"`, `"ChevronLeft"`, `"Play"`). The whole Lucide set ships with the runtime — no asset, upload, or SVG. Invalid or empty → `ArrowRight`, so a typo fails silently as an arrow |
 | Background fill | `backgroundColor` + `backgroundOpacity` | Default `backgroundOpacity` is **0** (transparent) |
 | Border | `borderColor` + `borderOpacity` | — |
 
@@ -510,7 +510,7 @@ Rendered as `Fullscreen` (always 100% viewport).
 | `GUI_TEXT` | `text`; `whiteSpace: "normal"` if wrapping; `lineHeight` ≥ `fontSize` | Placeholder text; no wrap; tall glyphs clipped |
 | `GUI_IMAGE` | `width` / `height` for a fixed-size box | Follows flex / asset natural size |
 | `GUI_INPUT` | `width` (and `height` if not 35) | 150×35 |
-| `GUI_ICON` | `iconSrc`, `iconSize` | ArrowRight at 30px |
+| `GUI_ICON` | `iconSrc`, `iconSize` | ArrowRight at 30px — a wrong `iconSrc` looks like this, not like an error |
 | `GUI_VECTOR` | `width`, `height` | 150×150 |
 | `GUI_VIDEO` | `width`, `height` | Container collapses |
 | `GUI_CHECKBOX` | `checked` or `defaultChecked` | — |

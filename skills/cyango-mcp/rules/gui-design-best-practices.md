@@ -24,6 +24,87 @@ If the panel also contains non-GUI entities, wrap the `GUI_CONTAINER` and those 
 
 ---
 
+## Icons: use `GUI_ICON`, never a glyph in `GUI_TEXT`
+
+`GUI_ICON` draws from a **bundled Lucide set** — no asset, no upload, no SVG. Set `iconSrc` to the icon's name and `iconSize` to its pixel size. An unknown or empty name silently falls back to `ArrowRight`, so spell it exactly.
+
+**Never** represent an icon as a character in `GUI_TEXT` (`"×"`, `"✕"`, `"➔"`, `"▶"`, `"☰"`). Glyphs depend on font coverage, sit on a text baseline instead of centring in their box, scale with `fontSize`/`lineHeight` rather than `iconSize`, and read as a typo when the font lacks them. Reach for `GUI_TEXT` only when the label is actual words.
+
+**Close-button recipe** (the same shape works for any icon button):
+
+```
+GUI_CONTAINER            ← the hit target: width/height ~44–60, borderRadius, backgroundColor,
+  │                        alignItems "center", justifyContent "center", hover state, close action
+  └── GUI_ICON           ← iconSrc "X", iconSize ~24, color
+```
+
+Put the action on whichever entity the user clicks; the container is the better target because it gives a comfortable hit area and a hover affordance. `GUI_ICON` accepts clicks too, so a bare icon with an action on it is fine when no chrome is wanted.
+
+Common names (Lucide, PascalCase):
+
+| Purpose | `iconSrc` |
+|---------|-----------|
+| Close / dismiss | `X`, `XCircle` |
+| Back / forward | `ChevronLeft`, `ChevronRight`, `ArrowLeft`, `ArrowRight` |
+| Menu / more | `Menu`, `EllipsisVertical` |
+| Media | `Play`, `Pause`, `Volume2`, `VolumeX` |
+| Info / help | `Info`, `CircleHelp` |
+| Navigation | `MapPin`, `Compass`, `Home` |
+| Fullscreen | `Maximize`, `Minimize` |
+
+> **Sizing gotcha**: `width` / `height` do **not** size a `GUI_ICON` — only `iconSize` does. Set the box on the parent container instead.
+
+---
+
+## Recipes
+
+Five compositions that cover most GUI asks. Each shows the entity tree and the `gui.currentValue.desktop.default` block for each node; the full `add_entities` wrapper is in [payloads.md](../references/payloads.md#add_entities--a-screen-space-gui-tree). Values are 1920 × 1080 pixels.
+
+**Text button** — `GUI_CONTAINER` + `GUI_TEXT`
+
+```json
+// GUI_CONTAINER (the button; carries the action and the hover state)
+{ "width": 260, "height": 64, "flexDirection": "row", "alignItems": "center",
+  "justifyContent": "center", "gap": 8, "paddingX": 24,
+  "backgroundColor": "#2E5AAC", "borderRadius": 12, "overflow": "visible" }
+// GUI_TEXT (child)
+{ "text": { "en-US": "Start tour" }, "fontSize": 18, "lineHeight": "24px", "textColor": "#FFFFFF" }
+```
+
+**Icon button** — `GUI_CONTAINER` + `GUI_ICON`
+
+```json
+// GUI_CONTAINER (square hit target)
+{ "width": 48, "height": 48, "alignItems": "center", "justifyContent": "center",
+  "backgroundColor": "#000000", "backgroundOpacity": 0.45, "borderRadius": 24, "overflow": "visible" }
+// GUI_ICON (child) — iconSize sizes it, width/height do not
+{ "iconSrc": "X", "iconSize": 24, "color": "#FFFFFF" }
+```
+
+**Card / panel** — `GUI_CONTAINER` wrapper with children
+
+```json
+{ "width": 800, "height": "auto", "flexDirection": "column", "gap": 16, "padding": 32,
+  "backgroundColor": "#101317", "backgroundOpacity": 0.92, "borderRadius": 16, "overflow": "visible" }
+```
+
+**Text block** — `GUI_TEXT`
+
+```json
+{ "text": { "en-US": "Body copy…" }, "fontSize": 18, "lineHeight": "26px",
+  "textColor": "#E6E8EB", "width": "100%", "whiteSpace": "normal" }
+```
+
+**Image** — `GUI_IMAGE` (insert the asset with `insert_assets`, then size it)
+
+```json
+{ "width": "100%", "height": 320, "objectFit": "cover", "borderRadius": 12, "keepAspectRatio": false }
+```
+
+Hover feedback goes in the sibling state, not a second entity: patch `gui.currentValue.desktop.hover.backgroundColor` on the container.
+
+---
+
 ## Viewport assumption
 
 Unless the user specifies otherwise, design for **1920 × 1080 desktop**. GUI coordinates are **1:1 viewport pixels** when GUI is parented under `GUI_SCREEN` — `width: 800` means 800 screen pixels, `fontSize: 22` means 22 px on screen. Scale every decision from that baseline.

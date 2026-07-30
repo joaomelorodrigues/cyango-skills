@@ -77,10 +77,31 @@ Use this guide when working with editor assets through MCP.
 ## Import workflow
 
 - MIME inferred from file extension; override with `mimeType` when needed.
-- Directory mode skips dot-files, subdirs (unless `recursive: true`), and unsupported types. Default-allowed: `image/*`, `model/*`, `video/*`, `audio/*`, `font/*`, plus `.glb`, `.gltf`, `.hdr`, `.exr`, `.ktx2`, `.splat`, `.ply`.
+- Directory mode skips dot-files, subdirs (unless `recursive: true`), and types the caller filtered out with `fileTypes`.
+- The **editor** is the authority on what may be uploaded and rejects anything outside this list:
+
+  | Category | Extensions |
+  |----------|------------|
+  | Image | `png`, `jpg`, `jpeg`, `webp`, `bmp`, `tiff`, `gif` |
+  | Vector | `svg` |
+  | HDR | `hdr`, `exr` |
+  | Video | `mp4`, `webm`, `mov` |
+  | Audio | `mp3`, `wav`, `aac` |
+  | 3D model | `glb` |
+  | Splat | `splat`, `ply`, `ksplat`, `spz`, `sog`, `zip` (SOG bundle) |
+  | Lottie | `json` |
+  | Font | `ttf` |
+  | Others | `vtt` |
+
+  Note what is **not** accepted: `gltf`, `ktx2`, `avi`, `m3u8`. A rejected upload returns the supported-type list in the error.
+- Two extensions are classified by **content**, not extension: a `.json` is a Lottie only if it parses as a Bodymovin document (otherwise font/data), and a `.zip` is a splat only if it holds a SOG bundle (otherwise a plain file). Check `assetCategory` on the returned asset before inserting.
 - Large uploads take time and may timeout (30 s per chunk). Prefer smaller files when possible.
 - Default upload folder is `My Uploads`; pass `assetFolderId` to target a specific library folder.
-- Per-file cap: 200 MB. Directory cap: 100 files.
+- Per-batch cap: 200 MiB and 100 files by default (`CYANGO_MCP_MAX_UPLOAD_BYTES` / `CYANGO_MCP_MAX_UPLOAD_FILES` on the MCP server raise them; the editor's own limit is higher).
+
+## Splat formats
+
+Splats can carry several source formats on one asset (`rad`, `spz`, `sog`, `ply`). The renderer picks RAD-LoD first; override per entity with `splat.currentValue.sourcePreference` (`SplatSourceTypes`: `rad` | `spz` | `sog` | `ply`). An unavailable preference falls back to the default selection. Uploading a `.zip` SOG bundle is upload-only — nothing renders until the worker finishes converting it.
 
 ## Multi-file insert semantics
 
@@ -100,6 +121,20 @@ When assets need different placements:
 2. Call `insert_assets` once with all rows, using per-row `position` / `rotation` / `scale` and per-row `sceneId` when inserting into more than one scene.
 3. Optionally call `update_entities` for fine-tuning after entities exist.
 
+## `list_assets` response shape
+
+Each row is a lite projection, not the full `IAsset`:
+
+```ts
+{ id, name, assetCategory, mimeType, thumbnailUrl, assetFolderId, ready }
+```
+
+`ready: false` means the worker is still converting — insert it anyway (the entity binds by id) but expect the viewport to fill in late. Credits/license metadata on provider assets is **not** in this projection; read it in the editor's asset info panel.
+
+## Provider (public) assets
+
+The editor's **Public assets** tab browses external providers (Pexels, Poly Haven, LottieFiles) and drags results straight into the story. Those assets are not in the user's library until imported, so `list_assets` cannot see them and MCP cannot import them. When the user asks for stock content, either point them at that tab or use `upload_assets` with a direct `url`.
+
 ## Story vs library
 
 - Story assets live in `activeStoryJson.assets` and are immediately available for insert.
@@ -117,8 +152,10 @@ Editor infers entity type from asset category:
 - `MODEL_3D` -> `CUSTOM_3D_MODEL`
 - `SPLAT` -> `SPLAT`
 - `FONT` -> `TEXT_3D`
+- `LOTTIE` -> `LOTTIE`
 - `SUBTITLES` -> `SUBTITLE`
 - `HDR` -> `HDR`
+- `OTHERS` -> no entity; the insert row fails
 
 Use `forceEntityType` when you need to override default inference.
 

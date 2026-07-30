@@ -5,7 +5,7 @@ Many separate create/remove/update operations can **crash the editor connection*
 - **Entity writes**: `add_entities`, `remove_entities`, `update_entities`, `insert_assets`.
 - **Scene writes**: `add_scenes`, `remove_scenes`, `update_scenes` for multi-scene work; `add_scene`, `remove_scene`, `update_scene` are one-scene convenience wrappers that still use batched bridge commands internally.
 
-The current MCP server bridge protocol is plural-only for writes (v4). Do not depend on old single-write bridge commands like `addEntity`, `removeEntity`, `addScene`, `removeScene`, `updateScene`, or `updateEntity`.
+The current MCP server bridge protocol is plural-only for writes (v5). Do not depend on old single-write bridge commands like `addEntity`, `removeEntity`, `addScene`, `removeScene`, `updateScene`, or `updateEntity`.
 
 ## Entity writes (required)
 
@@ -24,6 +24,32 @@ The current MCP server bridge protocol is plural-only for writes (v4). Do not de
 `{"success": true}` from the bridge still only means the editor accepted the command; if something looks wrong in the viewport, that is when to read state.
 
 Use **`bridge_status`** when debugging connection/queue problems, and **`validate_patch`** before writes when you are unsure about GUI paths or schema-safe values.
+
+## Symptom → cause → fix
+
+Start here when a write "worked" but the result is wrong. Most of these fail silently: the tool returns success and the viewport disagrees.
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| GUI patch applied, nothing changed | Path missing the breakpoint/state slot (`gui.currentValue.width` instead of `gui.currentValue.desktop.default.width`) | Re-patch with the full path; run `validate_patch` first |
+| GUI entity exists but is invisible or clipped | Parent `GUI_CONTAINER` is still the 150 × 150 default with `overflow: "scroll"` | Set the parent's `width` / `height` and `overflow: "visible"` — [parent chain table](gui-design-best-practices.md#layout-troubleshooting-parent-chain) |
+| Button renders as a text link | No explicit `height`; the container collapsed to padding + line height | Set `height` (60–80 px at 1080p) |
+| `width: "100%"` resolves to the wrong size | No numeric-width ancestor in the chain | Give the nearest card/panel a numeric width, or parent under `GUI_SCREEN` |
+| Text clipped or not wrapping | `lineHeight` below the glyph height, or missing `whiteSpace: "normal"` / `width` | Set `lineHeight` ≥ `fontSize` + ~4 px, `whiteSpace: "normal"`, explicit `width` |
+| Localized text never appears | Key written as `"en_US"` | Use `"en-US"` (hyphen) |
+| Icon renders as a right arrow | `iconSrc` is not a valid Lucide name — invalid values fall back to `ArrowRight` | Correct the name — [icon list](gui-design-best-practices.md#icons-use-gui_icon-never-a-glyph-in-gui_text) |
+| Primitive did not change size | Resized via `geometry` fields, which are export metadata | Set `scale` |
+| Model invisible or fills the whole scene | GLB authored in non-standard units | Read `scale.currentValue`, apply a corrective scale — [models-common.md](../references/entities/models/models-common.md#scale-arbitrary-authored-units--models-may-appear-invisible-or-giant) |
+| World-space GUI is tiny or unreadable | Transform micro-scaled (e.g. `[0.004, 0.004, 0.004]`) to fake pixel units | Reset `scale` to `[1, 1, 1]`; size with GUI `width` / `height` |
+| Lottie or sprite shows nothing | No asset bound, or `animations` was replaced with a partial array | Bind the asset; send the complete clip array — [animated-common.md](../references/entities/animated/animated-common.md) |
+| Lights look right, no shadows | Scene `shadowsEnabled` is off | `update_scene` → `shadowsEnabled: true` |
+| Physics bodies do not move | Scene `physics.enabled` is off | `update_scene` → `physics.enabled: true` |
+| Children render in the wrong order | Sibling sequence is layout order; re-added entities append to the end | Re-add the affected siblings in the intended order |
+| Panorama came in as `GUI_IMAGE` | The scene already had a panorama, so inference fell through | Insert with `forceEntityType: "PANORAMA"` |
+| Asset upload rejected | Extension outside the accepted list | Check [assets-common.md](../references/assets/assets-common.md#import-workflow); convert first |
+| `remove_assets` reports `blocked` | The asset is used by a story, prefab, or bundle | Report the named scenes/stories to the user; do not retry |
+| Editor disconnected mid-batch | Batch too large or the editor crashed while rendering | Reconnect, check `bridge_status`, retry in smaller batches |
+| Overlapping transparent surfaces flicker | Draw order, not position | Set `renderOrder` — [common.md](../references/entities/common.md#render-order) |
 
 ### Reference: what to check when debugging a suspected silent failure
 

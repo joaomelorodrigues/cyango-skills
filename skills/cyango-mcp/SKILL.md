@@ -1,90 +1,97 @@
 ---
 name: cyango-mcp
-description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values.'
+description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, Lottie/sprite animation, splats, lights and shadows, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values.'
 ---
 
-**@cyango-tools/skills version:** `1.0.14`
+**@cyango-tools/skills version:** `1.2.0`
 
 # Cyango MCP Skill
 
-Use batch tools only. Entity writes go through `add_entities`, `remove_entities`, and `update_entities`; scene writes go through `add_scenes`, `remove_scenes`, and `update_scenes` when more than one scene is involved. `add_scene`, `remove_scene`, and `update_scene` are one-scene convenience wrappers that still use the batched MCP protocol internally.
+Write tools are plural and batched: `add_entities`, `remove_entities`, `update_entities`, `add_scenes`, `remove_scenes`, `update_scenes`. `add_scene`, `remove_scene` and `update_scene` are one-scene wrappers over the same protocol. Single-write bridge commands (`addEntity`, `updateScene`, …) do not exist in protocol v5.
 
-Helpful utility tools:
+Utility tools: `bridge_status` (connection, queue depth, protocol version), `validate_patch` (check property paths offline, no editor round-trip), `instantiate_prefab`, `list_assets` / `insert_assets` / `upload_assets` / `remove_assets`, `get_story_state`.
 
-- `bridge_status` — check editor connection, queue depth, pending commands, and protocol version before/after debugging bridge issues.
-- `validate_patch` — validate `propertyPath` and common GUI value mistakes before sending `update_entities`, `update_scene`, or `update_scenes`.
-- `instantiate_prefab` — instantiate an existing Studio prefab into a scene.
+Copy payload shapes from [payloads.md](references/payloads.md) rather than assembling them from field tables.
 
-Current MCP server write protocol is plural-only (v5): `insertAssets`, `addScenes`, `removeScenes`, `updateScenes`, `addEntities`, `removeEntities`, `updateEntities`. Do not rely on old single-write bridge commands such as `addEntity`, `removeEntity`, `addScene`, `removeScene`, `updateScene`, or `updateEntity`.
+## Hard rules
 
-## Non-obvious rules
+1. **Batch.** Every entity create for a change goes in one `add_entities`, every patch in one `update_entities`, and so on — one call per operation type, never one per entity. Fragmented sequences destabilise the editor — [batching-and-verification.md](rules/batching-and-verification.md).
+2. **GUI values live at `gui.currentValue.<breakpoint>.<state>.<prop>`.** A bare path under `currentValue` writes nothing. Author `desktop.default` only, unless the user asked for responsive — [gui-desktop-first.md](rules/gui-desktop-first.md).
+3. **Read [gui-properties.md](references/entities/gui/gui-properties.md) for every `GUI_*` in the change set**, including its [type defaults](references/entities/gui/gui-properties.md#type-defaults). Unset keys still render via component fallbacks, so the viewport never matches the JSON. Use only values listed there — stray CSS keywords (`none`, `inherit`) can crash Yoga/uikit.
+4. **Read [non-gui-defaults.md](references/entities/non-gui-defaults.md) for every non-GUI type** in the change set before assuming what a created entity contains.
+5. **Roots are world space, children are local to the parent** — [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md).
+6. **Reparent by patching `parentEntityId`** (`""` for scene root). Never patch `children`.
+7. **Size primitives with `scale`.** `geometry` fields are export metadata and do not resize the viewport mesh.
+8. **Size world-space GUI with GUI `width` / `height`**, keeping `scale` at `[1, 1, 1]`. Never micro-scale a transform to fake pixel units.
+9. **Omit `scale` for unknown GLBs** in `insert_assets`; passing `[1,1,1]` suppresses the editor's own normalisation.
+10. **Icons are `GUI_ICON`** with a Lucide `iconSrc` (`"X"`, `"ChevronLeft"`, `"Play"`), sized by `iconSize`. Never a glyph character in a `GUI_TEXT`.
+11. **Let the editor infer entity type from an asset.** Pass `forceEntityType` only for the cases listed in [assets-common.md](references/assets/assets-common.md#image-and-video-entity-types--trust-the-editor-flat_-scope). `FLAT_IMAGE` / `FLAT_VIDEO` belong inside flat scenes only — for a poster or billboard in a 3D tour use `GUI_IMAGE`, a textured `PRIMITIVE_*`, or a model.
+12. **`LOTTIE` renders through the GUI stack**, so it is sized and placed like `GUI_IMAGE` (via `gui.currentValue`) even though it has no `GUI_` prefix.
+13. **Scene switches gate entity features**: entity `physics` needs scene `physics.enabled`, light `castShadow` needs scene `shadowsEnabled`.
+14. **Reuse matching scenes and entities** instead of creating near-duplicates.
 
-- **Primitives — scale, not geometry**: Studio canvas builds primitives from fixed Three.js args; `geometry.currentValue` fields (`radius`, `width`, etc.) are JSON/export metadata and do **not** resize the viewport mesh. Use `scale` to size. Read [primitives-common.md](references/entities/primitives/primitives-common.md) before assuming geometry fields affect what you see.
-- **World vs local**: roots = world space; children = **local** to parent — [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md).
-- **Reparent existing entities with `update_entities`**: set `propertyPath: "parentEntityId"` and `value: ""` for scene root, or set `value` to target parent entity id. Do not patch `children` paths directly.
-- **Entity roles**:
+Types that no longer exist: `HOTSPOT*`, `EMBED_*` entities and `LIVESTREAM_*` scenes. Older stories may still contain them; never create new ones.
 
-  | Entity | Role | Add manually? |
-  |--------|------|---------------|
-  | `GUI_SCREEN` | Viewport anchor; screen GUI parents here. Auto-created. | **No** |
-  | `GUI_CONTAINER` | GUI tree root (`<div>`). All `GUI_*` inside this, not in `GROUP`. | Yes |
-  | `GROUP` | Non-GUI / mixed 3D+GUI composites. | Yes |
+### Entity roles
 
-- **Desktop-first**: finish `desktop` first; `tablet`/`mobile` only when the user wants responsive. Breakpoints are override slots; runtime cascades per-property mobile→tablet→desktop. Tablet writes affect mobile inheritance — [gui-desktop-first.md](rules/gui-desktop-first.md).
-- **Batch writes (critical)**: use the fewest possible calls — batch by operation type (`add_entities` for entity creates, `remove_entities` for entity removals, `update_entities` for entity patches; `add_scenes`, `remove_scenes`, `update_scenes` for multi-scene work). Fragmented sequences cause editor instability — [batching-and-verification.md](rules/batching-and-verification.md).
-- **Assets via MCP**: use `list_assets` to discover story/library assets, `insert_assets` to place existing assets, and `upload_assets` to import from `path`/`url`/`directory`. For library scope, pass `folderId`; for hierarchy in one insert batch use `parentIndex` like `add_entities`. `insert` on a multi-file upload applies the same transform to every asset; omit it and follow with `insert_assets` when per-asset placement matters, or one shared `insert` then `update_entities` per spawned entity for placement.
-- **`FLAT_IMAGE` / `FLAT_VIDEO` — flat scenes only**: these entity types belong **only inside flat scenes** (do not expand into a scene-type tutorial here—see studio UI). **Do not** force them for wall posters, billboards, or arbitrary textured planes in navigable 3D tours; use `GUI_IMAGE`/`GUI_VIDEO`, `PRIMITIVE_*` with materials, `CUSTOM_3D_MODEL`, etc. Trust the editor default for images (`GUI_IMAGE` outside the narrow cases below). Omit `forceEntityType` unless [`assets-common.md`](references/assets/assets-common.md) applies (`PANORAMA`/`PANORAMA_180`, `GUI_VECTOR`, or rare explicit `FLAT_*` in a flat scene); never use `FLAT_*` as a generic fallback outside flat scenes.
-- **Actions — `CENTER_GPS`**: map action that requests browser geolocation at runtime and recenters the active map; it needs no target entity or payload beyond `type`/`eventType`. Read [actions.md](references/actions/actions.md#map) before adding it.
-- **Custom code has two separate surfaces**: `CUSTOM_CODE` actions go on entity/scene action arrays and receive the runtime `cyango` namespace; story Head/Footer code lives under story settings and does **not** receive `cyango`. Read [custom-code.md](references/custom-code.md) before writing either.
-- **Physics prerequisite**: if any entity in the change set has a `physics` block, ensure the scene has `physics.enabled: true` (and gravity set intentionally) via `update_scene` or `update_scenes` before validating. Entity-level physics does not simulate when scene physics is off.
-- **Render order**: use optional top-level `renderOrder` for draw-order fixes, not transform `z` or timeline `layer`. It is a finite number, higher values draw later within the same opaque/transparent pass, and children inherit a parent's effective render order unless they set their own. In Studio the control lives in the Visibility section; read [common.md](references/entities/common.md#render-order) before writing it.
-- **GUI — read [gui-properties.md](references/entities/gui/gui-properties.md) for every `GUI_*` in the change set**: check **[type defaults](references/entities/gui/gui-properties.md#type-defaults)** and field tables for every property you set or assume. MCP deep-merges `gui.currentValue`; unset keys still render via `GUI2D_*` JSX fallbacks — invisible in JSON/`get_entity`. Viewport ≠ JSON.
-  - "Button" = `GUI_CONTAINER` + `GUI_TEXT`; default `overflow: scroll` → spurious scrollbars unless `visible`; default container **150×150** → surprise width if you only set height.
-  - World-space GUI scale stays identity: use `scale.currentValue: [1, 1, 1]`; size panels/buttons with GUI `width`/`height`, not tiny transform scales like `[0.004, 0.004, 0.004]`.
-- **Non-GUI types — read [non-gui-defaults.md](references/entities/non-gui-defaults.md) for every non-GUI entity in the change set**: check per-type creation defaults and the minimum-to-set table. MCP deep-merges creation defaults; unset keys are not written to story JSON and not visible in `get_entity`.
-- **`CUSTOM_3D_MODEL` scale — read [models-common.md](references/entities/models/models-common.md#scale-arbitrary-authored-units--models-may-appear-invisible-or-giant)**: GLBs have no enforced unit scale. **Do not pass `scale [1,1,1]` for unknown GLBs** — omit `scale` in `insert_assets` entirely. If a model looks invisible or fills the scene, check `scale.currentValue` via `get_entity` and tell the user the model was likely authored at non-standard units; offer to fix the scale or direct them to enable "Fit new entities to unit box" in the canvas Options menu.
-- **Schema-safe values**: only use values listed in [gui-properties.md](references/entities/gui/gui-properties.md) for GUI fields. Stray CSS keywords (`none`, `inherit`, …) can crash Yoga/uikit.
-- Reuse matching scenes/entities when possible.
+| Entity | Role | Create it? |
+|--------|------|------------|
+| `GUI_SCREEN` | Viewport anchor; screen-space GUI parents here | No — one per scene, created automatically |
+| `GUI_CONTAINER` | Root and layout box of any GUI tree (`<div>`) | Yes — put `GUI_*` children in this, not in a `GROUP` |
+| `GROUP` | Frame for non-GUI or mixed 3D + GUI composites | Yes |
 
-## Skill files (canonical index)
+## What to read for the task at hand
 
-Every path is relative to this skill folder (`cyango-mcp/`).
+| The user asks for… | Read |
+|--------------------|------|
+| Any write at all | [payloads.md](references/payloads.md) for the shape, [batching-and-verification.md](rules/batching-and-verification.md) for the order |
+| A button, menu, panel, HUD, overlay, modal | [gui-design-best-practices.md](rules/gui-design-best-practices.md#recipes) → [gui-properties.md](references/entities/gui/gui-properties.md) |
+| An icon, close/back/play control | [gui-design-best-practices.md](rules/gui-design-best-practices.md#icons-use-gui_icon-never-a-glyph-in-gui_text) |
+| Responsive / mobile / tablet layout | [gui-desktop-first.md](rules/gui-desktop-first.md) |
+| A new scene, scene settings, navigation between scenes | [scenes.md](references/scenes/scenes.md) |
+| Click behavior, show/hide, go-to-scene, media control, GPS | [actions.md](references/actions/actions.md) |
+| Custom JavaScript, story Head/Footer code | [custom-code.md](references/custom-code.md) |
+| Importing files, stock media, placing existing assets | [assets-common.md](references/assets/assets-common.md) |
+| A 3D model, a splat scan | [models-common.md](references/entities/models/models-common.md) |
+| A Lottie or spritesheet animation | [animated-common.md](references/entities/animated/animated-common.md) |
+| Cubes, spheres, planes and their materials | [primitives-common.md](references/entities/primitives/primitives-common.md) |
+| Lighting, shadows | [lights-common.md](references/entities/lights/lights-common.md) |
+| A 360° tour, panorama scenes | [small-families.md](references/entities/small-families.md#panorama--panorama-panorama_video-panorama_180-panorama_180_video) + [scenes.md](references/scenes/scenes.md) |
+| Audio, 3D text, skybox/HDR, maps, subtitles, groups, camera/player | [small-families.md](references/entities/small-families.md) |
+| Keyframes, timing, media clips | [timeline.md](references/timeline/timeline.md) |
+| Overlapping or z-fighting surfaces, draw order | [common.md](references/entities/common.md#render-order) |
+| A prefab placed in a scene | `instantiate_prefab`; prefab bundling notes in [custom-code.md](references/custom-code.md) |
+| Something that "didn't work" or looks wrong | [batching-and-verification.md](rules/batching-and-verification.md#symptom--cause--fix) |
 
-### Rules (operational)
+## File index
 
-| File | Read when… |
-|------|------------|
-| [batching-and-verification.md](rules/batching-and-verification.md) | **Always read before any write** (create/remove/update). Follow batching/order rules and verify/debug guidance. |
-| [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md) | **Read before placing, nesting, or composing entities.** Use its transform/local-space and `add_entities` `parentIndex` rules. |
-| [gui-desktop-first.md](rules/gui-desktop-first.md) | **Read before any GUI write.** Use its `gui.currentValue` path format, create JSON shape, and breakpoint cascade rules. |
-| [gui-design-best-practices.md](rules/gui-design-best-practices.md) | **Read for GUI layout decisions and GUI debugging.** Apply `GUI_SCREEN` vs world-space, sizing, and parent-chain troubleshooting rules. |
+Paths are relative to this skill folder (`cyango-mcp/`).
 
-### Cross-cutting topics
+### Rules (how to work)
 
-| File | Contents |
-|------|----------|
-| [references/entities/common.md](references/entities/common.md) | **Open when touching any entity model data.** Source of truth for `IEntity` core fields, visibility, and family index. |
-| [references/scenes/scenes.md](references/scenes/scenes.md) | **Open before scene create/edit/navigation work.** Source of truth for `sceneType` and scene fields. |
-| [references/actions/actions.md](references/actions/actions.md) | **Open before adding/editing actions.** Source of truth for `IAction`, `ActionType`, `EventType`, conditions, and MCP patch shape. |
-| [references/custom-code.md](references/custom-code.md) | **Open before writing custom code.** Covers `CUSTOM_CODE` actions vs story Head/Footer code, runtime scope, MCP patch shapes, prefab bundling, and current MCP limitations. |
-| [references/timeline/timeline.md](references/timeline/timeline.md) | **Open before timeline/media/keyframe work.** Source of truth for `ITimeline`, `IAnimation`, keyframes, and `IMediaClip`. |
-| [references/assets/assets-common.md](references/assets/assets-common.md) | **Open before listing/inserting/importing assets.** Source of truth for MCP asset workflows and asset→entity mapping. |
+| File | Covers |
+|------|--------|
+| [batching-and-verification.md](rules/batching-and-verification.md) | Call batching, write order, verification after writes, symptom → cause → fix table. |
+| [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md) | World vs local transforms, `parentIndex`, composing entity trees. |
+| [gui-desktop-first.md](rules/gui-desktop-first.md) | Breakpoint cascade, `gui.currentValue` path format, when to touch tablet/mobile. |
+| [gui-design-best-practices.md](rules/gui-design-best-practices.md) | Recipes, icons, sizing for 1920 × 1080, screen vs world GUI, parent-chain troubleshooting. |
 
-### Entity families (`references/entities/`)
+### References (what the data is)
 
-| File | Read when… |
-|------|------------|
-| [references/entities/non-gui-defaults.md](references/entities/non-gui-defaults.md) | **Open for any non-GUI create/update.** Creation defaults for all non-GUI types: primitives, lights, media, camera, skybox, HDR, webcam, text-3D, audio. Minimum-to-set table. |
-| [references/entities/gui/gui-common.md](references/entities/gui/gui-common.md) | **Read first for any `GUI_*` task.** Defines `IEntityGUI`, breakpoints, and UIKit role mapping. |
-| [references/entities/gui/gui-properties.md](references/entities/gui/gui-properties.md) | **Mandatory for every GUI create/update/debug pass.** Validate every GUI field/value and check **[type defaults](references/entities/gui/gui-properties.md#type-defaults)** for each `GUI_*` type in scope. |
-| [references/entities/primitives/primitives-common.md](references/entities/primitives/primitives-common.md) | **Open before any `PRIMITIVE_*` create/edit.** Use its geometry/material field rules. |
-| [references/entities/lights/lights-common.md](references/entities/lights/lights-common.md) | **Open before any light create/edit.** Use as `*_LIGHT` source of truth. |
-| [references/entities/panorama/panorama-common.md](references/entities/panorama/panorama-common.md) | **Open before panorama work.** Source of truth for panorama entity fields. |
-| [references/entities/text-3d/text-3d-common.md](references/entities/text-3d/text-3d-common.md) | **Open before `TEXT_3D*` work.** Source of truth for text-3D fields. |
-| [references/entities/maps/maps-common.md](references/entities/maps/maps-common.md) | **Open before `MAP_*` work.** Source of truth for map entity fields. |
-| [references/entities/models/models-common.md](references/entities/models/models-common.md) | **Open before model/splat work.** Source of truth for model and splat fields. |
-| [references/entities/environment/environment-common.md](references/entities/environment/environment-common.md) | **Open before `SKYBOX`/`HDR` work.** Source of truth for environment fields. |
-| [references/entities/audio/audio-common.md](references/entities/audio/audio-common.md) | **Open before `AUDIO_*` work.** Source of truth for audio entity fields. |
-| [references/entities/camera-player/camera-player-common.md](references/entities/camera-player/camera-player-common.md) | **Open before camera/player/webcam/face work.** Source of truth for those entity fields. |
-| [references/entities/subtitle/subtitle-common.md](references/entities/subtitle/subtitle-common.md) | **Open before subtitle work.** Source of truth for `SUBTITLE` fields. |
-| [references/entities/structure/structure-common.md](references/entities/structure/structure-common.md) | **Open before `GROUP`/`GROUP_BOX`/`NONE` structural work.** Source of truth for structure entities. |
+| File | Covers |
+|------|--------|
+| [payloads.md](references/payloads.md) | Complete example payload for every write tool. |
+| [entities/common.md](references/entities/common.md) | `IEntity` core fields, visibility, render order, family index. |
+| [entities/non-gui-defaults.md](references/entities/non-gui-defaults.md) | Creation defaults and minimum-to-set for every non-GUI type. |
+| [entities/gui/gui-common.md](references/entities/gui/gui-common.md) | `IEntityGUI`, breakpoints and states, uikit role mapping. |
+| [entities/gui/gui-properties.md](references/entities/gui/gui-properties.md) | Every GUI field, allowed values, per-type defaults. |
+| [entities/primitives/primitives-common.md](references/entities/primitives/primitives-common.md) | `PRIMITIVE_*` geometry and material fields. |
+| [entities/lights/lights-common.md](references/entities/lights/lights-common.md) | `*_LIGHT` fields, shadow block, per-type applicability. |
+| [entities/models/models-common.md](references/entities/models/models-common.md) | `CUSTOM_3D_MODEL` and `SPLAT`, clips, splat source and effects, GLB scale handling. |
+| [entities/animated/animated-common.md](references/entities/animated/animated-common.md) | `LOTTIE` and `SPRITE` — raster config, spritesheet grid, clip playback. |
+| [entities/small-families.md](references/entities/small-families.md) | Structure, panorama, 3D text, audio, environment, camera/player/webcam/face, maps, subtitle. |
+| [scenes/scenes.md](references/scenes/scenes.md) | `SceneTypes`, scene fields, what each scene type seeds. |
+| [actions/actions.md](references/actions/actions.md) | `IAction`, `ActionType`, `EventType`, conditions, patch shape. |
+| [timeline/timeline.md](references/timeline/timeline.md) | `ITimeline`, `IAnimation`, keyframes, `IMediaClip`, animation clips. |
+| [assets/assets-common.md](references/assets/assets-common.md) | Asset tools, upload rules, asset → entity mapping, splat formats. |
+| [custom-code.md](references/custom-code.md) | `CUSTOM_CODE` actions vs story Head/Footer code, runtime scope, limitations. |

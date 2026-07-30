@@ -79,6 +79,9 @@ Each `GUI_*` entity maps to a **@react-three/uikit** component: a **Yoga-driven 
 | `GUI_CHECKBOX` | `Checkbox` (default kit) | `<input type="checkbox">` |
 | `GUI_SWITCH` | `Switch` (default kit) | `<input type="checkbox">` (toggle) |
 | `GUI_SLIDER` | `Slider` (default kit) | `<input type="range">` |
+| `LOTTIE` | `Image` (rasterised Lottie) | `<img>` (animated) |
+
+> `LOTTIE` has no `GUI_` prefix but renders through the same uikit stack, so it takes layout, sizing, spacing, background and position from `gui.currentValue` exactly like `GUI_IMAGE`. Playback lives in `animations` — see [animated-common.md](../animated/animated-common.md).
 
 ---
 
@@ -92,7 +95,7 @@ Each `GUI_*` entity maps to a **@react-three/uikit** component: a **Yoga-driven 
 | `GUI_IMAGE` | Raster image (`<img>` analogue) | Image `src` / URL, sizing, `objectFit`-style behavior, opacity, border. |
 | `GUI_VIDEO` | Video in UI (`<video>` analogue) | Video source props, `videoControls`, sizing. |
 | `GUI_VECTOR` | SVG content | SVG path/fill/stroke props. |
-| `GUI_ICON` | Small icon slot | `iconSrc`, `iconSize`. Often paired with `GUI_TEXT` in a horizontal `GUI_CONTAINER`. |
+| `GUI_ICON` | Icon from the bundled **Lucide** set | `iconSrc` is the icon name (`"X"`, `"ChevronLeft"`, `"Play"`) — no asset or SVG needed; unknown names fall back to `ArrowRight`. `iconSize` sizes it (`width`/`height` do not). Accepts click actions. Use it for every icon — never a glyph character in `GUI_TEXT`. |
 | `GUI_INPUT` | Text field | `value`, `placeholder`, `type`. Use `focus` state for focus ring. |
 | `GUI_CHECKBOX` | Checkbox | Checked state, label alignment. `hover`/`active` for affordance. |
 | `GUI_SWITCH` | Toggle switch | On/off value, track/knob styling. |

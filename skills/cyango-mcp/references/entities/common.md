@@ -66,7 +66,7 @@ Most "live" fields use `IAnimation<T>`: `currentValue` plus optional `keyframes`
 
 ## Render order
 
-`renderOrder` is an optional top-level number on `IEntity`. Use it only when visual draw order needs an explicit override, for example overlapping transparent planes, GUI-in-world panels, hotspots, splats, or media surfaces.
+`renderOrder` is an optional top-level number on `IEntity`. Use it only when visual draw order needs an explicit override, for example overlapping transparent planes, GUI-in-world panels, splats, or media surfaces.
 
 | Field | Role |
 |-------|------|
@@ -94,27 +94,34 @@ Use `update_entities` with `propertyPath: "renderOrder"` to set or clear it.
 | `handles` | `IEntityHandles` — gizmo manipulation in editor. |
 | `billboard` | Face-camera behavior. |
 | `prefab` | `IEntityPrefabLink` — prefab id, overrides, instance group. |
+| `animations` | `IAnimation<IEntityAnimation[]>` — clips for `CUSTOM_3D_MODEL`, `SPRITE`, and `LOTTIE`. Replaced wholesale on patch. |
+| `spritesheet` | `IEntitySpritesheet` — `cols` / `rows` / `fps` grid for `SPRITE`. |
+| `lottie` | `IEntityLottie` — `resolution` raster edge for `LOTTIE`. |
+| `model3D` | `IEntityModel3D` — model-specific options on `CUSTOM_3D_MODEL`. |
+| `uniformScale` | Keep scale uniform across axes. |
+| `resizeToUnitBox` | Opt-in normalisation of the content to a 1-unit bounding box. Honoured by `CUSTOM_3D_MODEL` and the GUI-3D wrapper; other types ignore it. Unset keeps each renderer's existing behavior. |
+| `teleport` | `IEntityTeleport` — teleport target behavior. |
+| `mapProperties` | `IEntityMapProperties` — per-entity map placement (`MAP_*` scenes). |
+| `player` | `IAnimation<IEntityPlayer>` — locomotion/player config on `PLAYER`. |
+| `xrStore` | `IEntityXRStore` — XR store product metadata. |
+| `tooltip` | Tooltip string. |
 
 ---
 
 ## Per-family docs
 
-Each row names the family’s `*-common.md` file. That file defines the family `entityType` values, roles, and payloads.
+Each row names the file that defines that family's `entityType` values, roles, and payloads.
 
-| Family | `*-common.md` |
-|--------|---------------|
-| GUI | `gui/gui-common.md` |
-| Primitives | `primitives/primitives-common.md` |
-| Lights | `lights/lights-common.md` |
-| Panorama | `panorama/panorama-common.md` |
-| 3D text | `text-3d/text-3d-common.md` |
-| Maps | `maps/maps-common.md` |
-| Models & splats | `models/models-common.md` |
-| Environment | `environment/environment-common.md` |
-| Audio | `audio/audio-common.md` |
-| Camera / player / webcam / face | `camera-player/camera-player-common.md` |
-| Subtitle | `subtitle/subtitle-common.md` |
-| Structure | `structure/structure-common.md` |
+| Family | File |
+|--------|------|
+| GUI (`GUI_*`) | [gui/gui-common.md](gui/gui-common.md), fields in [gui/gui-properties.md](gui/gui-properties.md) |
+| Primitives (`PRIMITIVE_*`) | [primitives/primitives-common.md](primitives/primitives-common.md) |
+| Lights (`*_LIGHT`) | [lights/lights-common.md](lights/lights-common.md) |
+| Models & splats (`CUSTOM_3D_MODEL`, `SPLAT`) | [models/models-common.md](models/models-common.md) |
+| Frame animation (`LOTTIE`, `SPRITE`) | [animated/animated-common.md](animated/animated-common.md) |
+| Structure, panorama, 3D text, audio, environment, camera/player/webcam/face, maps, subtitle | [small-families.md](small-families.md) |
+
+Creation defaults for every non-GUI type: [non-gui-defaults.md](non-gui-defaults.md).
 
 ---
 
