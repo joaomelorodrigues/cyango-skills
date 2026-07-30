@@ -3,13 +3,13 @@ name: cyango-mcp
 description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, Lottie/sprite animation, splats, lights and shadows, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values.'
 ---
 
-**@cyango-tools/skills version:** `1.3.3`
+**@cyango-tools/skills version:** `1.4.0`
 
 # Cyango MCP Skill
 
-Write tools are plural and batched: `add_entities`, `remove_entities`, `update_entities`, `add_scenes`, `remove_scenes`, `update_scenes`. `add_scene`, `remove_scene` and `update_scene` are one-scene wrappers over the same protocol. Single-write bridge commands (`addEntity`, `updateScene`, …) do not exist in protocol v5.
+Write tools are plural and batched: `add_entities`, `remove_entities`, `update_entities`, `add_scenes`, `remove_scenes`, `update_scenes`. `add_scene`, `remove_scene` and `update_scene` are one-scene wrappers over the same protocol. Single-write bridge commands (`addEntity`, `updateScene`, …) do not exist in protocol v6.
 
-Utility tools: `bridge_status` (connection, queue depth, protocol version), `validate_patch` (check property paths offline, no editor round-trip), `instantiate_prefab`, `list_assets` / `insert_assets` / `upload_assets` / `remove_assets`, `get_story_state`.
+Utility tools: `bridge_status` (connection, queue depth, protocol version), `validate_patch` (check property paths offline, no editor round-trip), `instantiate_prefab`, `list_assets` / `insert_assets` / `upload_assets` / `remove_assets`, `list_asset_providers` / `search_provider_assets` for free stock assets, `get_story_state`.
 
 Copy payload shapes from [payloads.md](references/payloads.md) rather than assembling them from field tables.
 
@@ -52,7 +52,8 @@ Types that no longer exist: `HOTSPOT*`, `EMBED_*` entities and `LIVESTREAM_*` sc
 | A new scene, scene settings, navigation between scenes | [scenes.md](references/scenes/scenes.md) |
 | Click behavior, show/hide, go-to-scene, media control, GPS | [actions.md](references/actions/actions.md) |
 | Custom JavaScript, story Head/Footer code | [custom-code.md](references/custom-code.md) |
-| Importing files, stock media, placing existing assets | [assets-common.md](references/assets/assets-common.md) |
+| Importing files, placing existing assets | [assets-common.md](references/assets/assets-common.md) |
+| Stock photos, videos, HDRIs or models the user does not have | [assets-common.md](references/assets/assets-common.md#provider-public-assets) — `list_asset_providers` → `search_provider_assets` → `insert_assets` |
 | A 3D model, a splat scan | [models-common.md](references/entities/models/models-common.md) |
 | A Lottie or spritesheet animation | [animated-common.md](references/entities/animated/animated-common.md) |
 | Cubes, spheres, planes and their materials | [primitives-common.md](references/entities/primitives/primitives-common.md) |

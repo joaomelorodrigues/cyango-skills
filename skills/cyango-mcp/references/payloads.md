@@ -225,6 +225,23 @@ Places existing story or library assets. One call can span several scenes: rows 
 
 ---
 
+## Provider assets — search then insert
+
+```json
+// 1. search_provider_assets
+{ "provider": "polyhaven", "query": "forest", "assetCategory": "HDR", "perPage": 12 }
+
+// 2. insert_assets — the id comes straight from the search result
+{
+  "sceneId": "scene_a1b2",
+  "inserts": [{ "assetId": "<id from the search result>" }]
+}
+```
+
+Call `list_asset_providers` first for the provider names and the categories each one supports. Items with `needsImport: true` (every 3D model) are copied server-side on insert, which can take minutes. Report the item's `attribution.author` and `license` to the user — see [assets-common.md](assets/assets-common.md#provider-public-assets).
+
+---
+
 ## `upload_assets`
 
 ```json

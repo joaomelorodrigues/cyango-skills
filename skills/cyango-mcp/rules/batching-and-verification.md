@@ -5,7 +5,7 @@ Many separate create/remove/update operations can **crash the editor connection*
 - **Entity writes**: `add_entities`, `remove_entities`, `update_entities`, `insert_assets`.
 - **Scene writes**: `add_scenes`, `remove_scenes`, `update_scenes` for multi-scene work; `add_scene`, `remove_scene`, `update_scene` are one-scene convenience wrappers that still use batched bridge commands internally.
 
-The current MCP server bridge protocol is plural-only for writes (v5). Do not depend on old single-write bridge commands like `addEntity`, `removeEntity`, `addScene`, `removeScene`, `updateScene`, or `updateEntity`.
+The current MCP server bridge protocol is plural-only for writes (v6). Do not depend on old single-write bridge commands like `addEntity`, `removeEntity`, `addScene`, `removeScene`, `updateScene`, or `updateEntity`.
 
 ## Entity writes (required)
 

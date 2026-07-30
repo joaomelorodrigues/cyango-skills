@@ -4,6 +4,8 @@ Use this guide when working with editor assets through MCP.
 
 ## Core tools
 
+- `list_asset_providers` — list the external providers this workspace can browse and what each supports.
+- `search_provider_assets` — search one provider for free stock assets; results are insertable by id for 10 minutes.
 - `list_assets` — list assets from:
   - story assets (`activeStoryJson.assets`)
   - user library assets (`getAssets(folderId, page, perPage, filters)`)
@@ -133,7 +135,43 @@ Each row is a lite projection, not the full `IAsset`:
 
 ## Provider (public) assets
 
-The editor's **Public assets** tab browses external providers (Pexels, Poly Haven, LottieFiles) and drags results straight into the story. Those assets are not in the user's library until imported, so `list_assets` cannot see them and MCP cannot import them. When the user asks for stock content, either point them at that tab or use `upload_assets` with a direct `url`.
+Free stock assets from external providers (Pexels, Poly Haven, …) are searchable and insertable over MCP. Three steps:
+
+1. **`list_asset_providers`** — returns the configured providers and the categories each supports. Call it first; never assume a provider name or that a provider can serve the category you want.
+2. **`search_provider_assets`** — one provider per call:
+
+   ```ts
+   { provider: "polyhaven", query?: string, assetCategory?: string, page?: number, perPage?: number }
+   ```
+
+   Each item comes back as `{ id, name, assetCategory, thumbnailUrl, license, attribution, sourceUrl, needsImport }`.
+3. **`insert_assets`** — pass the item `id` in an ordinary insert row. No separate tool, and the same batching rules apply.
+
+```json
+{
+  "sceneId": "scene_a1b2",
+  "inserts": [{ "assetId": "<id from search>", "position": [0, 0, -3] }]
+}
+```
+
+### What happens on insert
+
+| `needsImport` | Behaviour |
+|---------------|-----------|
+| `false` | Hotlinked — inserted immediately, the file stays on the provider's CDN. |
+| `true` | Copied into the user's library first (download → convert → asset), then inserted. All 3D models are in this group. |
+
+An import runs server-side and can take **minutes** for a large model. The bridge streams progress while it works, so the call does not time out — but expect a long wait and do not retry in parallel.
+
+Search results stay insertable for **10 minutes**. After that the id no longer resolves and `insert_assets` reports it in `missing` with a note to search again.
+
+### Attribution is not optional
+
+Every item carries `license` and `attribution` (`author`, `sourceUrl`). Some providers require credit and some licenses require it legally. **Tell the user the author and licence of everything you place**, and mention when a licence requires visible credit in the published story. Do not strip or invent this metadata — the editor shows it in the asset info panel, and there is a copy-credits button there.
+
+### Choosing hotlink vs a copy
+
+Hotlinked assets depend on the provider staying up, which is fine while drafting but a dependency the user does not control once published. If they ask for something durable, or the story is heading to publish, prefer assets you can copy — or upload the file into their library with `upload_assets`.
 
 ## Story vs library
 
