@@ -1,6 +1,6 @@
 ---
 name: cyango-mcp
-description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, Lottie/sprite animation, splats, lights and shadows, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values.'
+description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, Lottie/sprite animation, splats, lights and shadows, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values. UI design requests assume responsive layout (tablet/mobile overrides after desktop).'
 ---
 
 **@cyango-tools/skills version:** `1.4.1`
@@ -16,7 +16,7 @@ Copy payload shapes from [payloads.md](references/payloads.md) rather than assem
 ## Hard rules
 
 1. **Batch.** Every entity create for a change goes in one `add_entities`, every patch in one `update_entities`, and so on — one call per operation type, never one per entity. Fragmented sequences destabilise the editor — [batching-and-verification.md](rules/batching-and-verification.md).
-2. **GUI values live at `gui.currentValue.<breakpoint>.<state>.<prop>`.** A bare path under `currentValue` writes nothing. Author `desktop.default` only, unless the user asked for responsive — [gui-desktop-first.md](rules/gui-desktop-first.md).
+2. **GUI values live at `gui.currentValue.<breakpoint>.<state>.<prop>`.** A bare path under `currentValue` writes nothing. Author `desktop.default` first; for **UI design** requests (menus, dashboards, forms, etc.) assume responsive and add `tablet`/`mobile` overrides after desktop is solid. For other GUI edits, `desktop` alone unless the user asks for breakpoints — [gui-desktop-first.md](rules/gui-desktop-first.md).
 3. **Read [gui-properties.md](references/entities/gui/gui-properties.md) for every `GUI_*` in the change set**, including its [type defaults](references/entities/gui/gui-properties.md#type-defaults). Unset keys still render via component fallbacks, so the viewport never matches the JSON. Use only values listed there — stray CSS keywords (`none`, `inherit`) can crash Yoga/uikit.
 4. **Read [non-gui-defaults.md](references/entities/non-gui-defaults.md) for every non-GUI type** in the change set before assuming what a created entity contains.
 5. **Roots are world space, children are local to the parent** — [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md).

@@ -111,6 +111,20 @@ Unless the user specifies otherwise, design for **1920 × 1080 desktop**. GUI co
 
 ---
 
+## Responsive UI designs (default)
+
+When the user asks for a **UI design**, assume a **responsive layout** — not desktop-only. Still author `desktop.default` first, then add breakpoint overrides for what genuinely changes:
+
+| Breakpoint | Preview width | Typical adjustments |
+|---|---|---|
+| `desktop` | 1920 px | Base layout — full sidebars, multi-column grids, generous padding |
+| `tablet` | 991 px | Narrower panels, tighter padding, smaller gaps, sometimes stack columns |
+| `mobile` | 479 px | Full-width stacks, larger tap targets, reduced font sizes only when needed |
+
+Only override properties that differ per breakpoint — the cascade fills the rest from desktop. Watch the **tablet-only-change trap** in [gui-desktop-first.md](gui-desktop-first.md): if mobile should keep the desktop value, set it explicitly on `mobile` rather than leaving it empty (mobile inherits tablet).
+
+---
+
 ## Width and height rules
 
 **Width:**

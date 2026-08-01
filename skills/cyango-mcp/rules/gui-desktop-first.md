@@ -1,6 +1,10 @@
 # GUI: desktop-first execution
 
-When building or editing GUI layouts, **always complete the `desktop` breakpoint first**. Only set `tablet` and `mobile` values if the user has explicitly stated those breakpoints should be configured, or has stated that what is being built should be responsive. Otherwise, `desktop` alone is sufficient.
+When building or editing GUI layouts, **always complete the `desktop` breakpoint first**.
+
+**Assume responsive for UI design requests** — menus, dashboards, onboarding flows, forms, landing screens, and similar layout work. After desktop is solid, add `tablet` and `mobile` overrides for properties that should differ (widths, padding, font sizes, flex direction, gaps).
+
+For **non-design GUI edits** (bug fixes, single-property tweaks, copy changes), `desktop` alone is sufficient unless the user asks for breakpoints or says the work should be responsive.
 
 ## Why
 
@@ -34,7 +38,7 @@ Because the cascade is per-property, a breakpoint slot only needs to contain the
 
 1. **Set `desktop` properties** — sizes, flex, typography, colors, all layout.
 2. **Optionally confirm `desktop` layout** with `get_entity` if debugging a layout issue before adding responsive overrides.
-3. **Add `tablet` / `mobile` overrides** only when the user explicitly requires responsive variants.
+3. **Add `tablet` / `mobile` overrides** when the task is a UI design (default) or the user explicitly requires responsive variants.
 
 ## Property paths
 
@@ -49,7 +53,7 @@ Do **not** write bare `gui.currentValue.<property>` — the runtime always reads
 
 ## At create time
 
-When passing `overrides` on **`add_entities`** rows, place all initial values under `gui.currentValue.desktop.default`. Omit `tablet` and `mobile` entirely unless the design specifically needs responsive variants — the cascade will handle the rest:
+When passing `overrides` on **`add_entities`** rows, place all initial values under `gui.currentValue.desktop.default`. Add `tablet` / `mobile` in follow-up `update_entities` batches for UI designs; omit them for non-design edits — the cascade handles the rest:
 
 ```json
 {
@@ -73,5 +77,5 @@ When passing `overrides` on **`add_entities`** rows, place all initial values un
 
 - [ ] Text does not clip (`lineHeight ≥ fontSize + ~4 px` on desktop).
 - [ ] Flex children are sized and ordered as intended.
-- [ ] User has explicitly requested responsive design — if not, stop here.
+- [ ] Task is a UI design (add overrides) or the user explicitly requested responsive — if neither, stop here.
 - [ ] For each `tablet` override added: decide whether `mobile` should inherit it (leave mobile empty) or match desktop instead (set mobile explicitly to the desktop value).
