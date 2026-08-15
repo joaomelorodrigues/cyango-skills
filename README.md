@@ -4,11 +4,21 @@ Agent skills for the Cyango platform. Install them into any project with a singl
 
 ## Install a skill
 
+### From npm (recommended for Cyango projects)
+
 ```bash
 npx @cyango-tools/skills@latest install cyango-mcp
 ```
 
 This copies the skill from **inside the npm package** into `.agents/skills/cyango-mcp/` in your project. There is **no** clone from GitHub — only what ships in `@cyango-tools/skills` on npm. Cursor and other agent tools pick up `.agents/skills/` automatically.
+
+### From skills.sh (Vercel open skills directory)
+
+```bash
+npx skills add joaomelorodrigues/cyango-skills --skill cyango-mcp
+```
+
+This installs from the public GitHub repo and registers anonymous install telemetry on [skills.sh](https://skills.sh/joaomelorodrigues/cyango-skills/cyango-mcp).
 
 ## Available skills
 
@@ -30,21 +40,36 @@ npx @cyango-tools/skills@latest install cyango-mcp
 
 Use `@latest` (or a pinned version) so `npx` does not keep an old cached tarball of the CLI.
 
-## Publishing to npm
+## Publishing a release
 
-This package uses scope **`@cyango-tools/skills`** (same org as **`@cyango-tools/mcp-server`** on npmjs). The repo `.npmrc` sends **`@cyango-tools/*`** to **npmjs** and keeps **`@cyango/*`** on Gitea for internal packages, matching the MCP server setup. If a global `~/.npmrc` overrides **`@cyango-tools:registry`**, use the scripts below so the tarball still lands on npmjs.
+Releases sync the skill version, push to GitHub, publish to npm, and seed skills.sh telemetry.
 
-Use the npm scripts so the tarball always goes to **npmjs**:
+```bash
+npm run release:patch   # or release:minor / release:major
+```
+
+What `release:*` does:
+
+1. Bump `package.json` and sync the version line in `skills/cyango-mcp/SKILL.md`
+2. Commit, tag (`v<version>`), and push to `origin`
+3. Publish `@cyango-tools/skills` to npmjs
+4. Run `npx skills add joaomelorodrigues/cyango-skills --skill cyango-mcp` (skills.sh telemetry)
+
+If you already pushed to GitHub and only need npm + skills.sh:
 
 ```bash
 npm run publish:patch   # or publish:minor / publish:major
 ```
 
-Publish the current version only (no version bump):
+Republish the current version without a bump:
 
 ```bash
-npm run publish:npm
+npm run publish:npm && npm run publish:skills-sh
 ```
+
+### npm registry notes
+
+This package uses scope **`@cyango-tools/skills`** (same org as **`@cyango-tools/mcp-server`** on npmjs). The repo `.npmrc` sends **`@cyango-tools/*`** to **npmjs** and keeps **`@cyango/*`** on Gitea for internal packages, matching the MCP server setup. If a global `~/.npmrc` overrides **`@cyango-tools:registry`**, use the scripts below so the tarball still lands on npmjs.
 
 If you publish manually, pass both `--registry` and the scope override:
 
@@ -53,3 +78,26 @@ npm publish --access public --registry https://registry.npmjs.org/ '--@cyango-to
 ```
 
 Log in when needed: `npm login --registry https://registry.npmjs.org/`.
+
+### skills.sh shows 404 after npm publish
+
+That is expected if you only ran `npm publish` or `npm run publish:patch` **without pushing to GitHub** and **without seeding skills.sh**.
+
+- **npm** ships `@cyango-tools/skills` from the tarball.
+- **skills.sh** lists skills from **GitHub** plus install telemetry from `npx skills add`.
+
+Fix it:
+
+```bash
+git push origin main
+npm run publish:skills-sh
+```
+
+Or run the full release next time:
+
+```bash
+npm run release:patch
+```
+
+The skills.sh page can take a minute to appear after telemetry. Search indexing may lag longer than the skill page itself.
+
