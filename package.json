@@ -1,6 +1,6 @@
 {
   "name": "@cyango-tools/skills",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "CLI to install Cyango agent skills",
   "type": "module",
   "scripts": {
@@ -9,10 +9,14 @@
     "bump:patch": "npm version patch --no-git-tag-version",
     "bump:minor": "npm version minor --no-git-tag-version",
     "bump:major": "npm version major --no-git-tag-version",
-    "publish:patch": "npm run bump:patch && npm publish --access public --registry https://registry.npmjs.org/ '--@cyango-tools:registry=https://registry.npmjs.org/'",
-    "publish:minor": "npm run bump:minor && npm publish --access public --registry https://registry.npmjs.org/ '--@cyango-tools:registry=https://registry.npmjs.org/'",
-    "publish:major": "npm run bump:major && npm publish --access public --registry https://registry.npmjs.org/ '--@cyango-tools:registry=https://registry.npmjs.org/'",
-    "publish:npm": "npm publish --access public --registry https://registry.npmjs.org/ '--@cyango-tools:registry=https://registry.npmjs.org/'"
+    "publish:patch": "npm run bump:patch && npm run sync:skill-version && npm run publish:npm && npm run publish:skills-sh",
+    "publish:minor": "npm run bump:minor && npm run sync:skill-version && npm run publish:npm && npm run publish:skills-sh",
+    "publish:major": "npm run bump:major && npm run sync:skill-version && npm run publish:npm && npm run publish:skills-sh",
+    "publish:npm": "npm publish --access public --registry https://registry.npmjs.org/ '--@cyango-tools:registry=https://registry.npmjs.org/'",
+    "publish:skills-sh": "node scripts/publish-skills-sh.mjs",
+    "release:patch": "node scripts/release.mjs patch",
+    "release:minor": "node scripts/release.mjs minor",
+    "release:major": "node scripts/release.mjs major"
   },
   "bin": {
     "cyango-skills": "bin/install.js"
