@@ -1,9 +1,9 @@
 ---
 name: cyango-mcp
-description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, Lottie/sprite animation, splats, lights and shadows, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values. UI design requests assume responsive layout (tablet/mobile overrides after desktop).'
+description: 'Cyango MCP: live editor via plural/batched tools. Use for scenes, GROUPs, GUI, 3D layout, Lottie/sprite animation, splats, lights and shadows, actions, custom code actions, story Head/Footer code, timelines, prefabs, navigation, bridge status/debugging, patch validation — or any Cyango MCP/bridge work. Infer from the ask even without "MCP". Batch writes, screen vs world GUI, breakpoints, schema-safe GUI values. UI design requests assume responsive layout (tablet/mobile overrides after desktop). Choose built-in entities/actions before custom code — see entity-choice decision flow.'
 ---
 
-**@cyango-tools/skills version:** `1.5.3`
+**@cyango-tools/skills version:** `1.5.4`
 
 # Cyango MCP Skill
 
@@ -28,7 +28,7 @@ Copy payload shapes from [payloads.md](references/payloads.md) rather than assem
 11. **Icons are `GUI_ICON`** with a Lucide `iconSrc` (`"X"`, `"ChevronLeft"`, `"Play"`), sized by `iconSize`. Never a glyph character in a `GUI_TEXT`.
 12. **Let the editor infer entity type from an asset.** Pass `forceEntityType` only for the cases listed in [assets-common.md](references/assets/assets-common.md#image-and-video-entity-types--trust-the-editor-flat_-scope). `FLAT_IMAGE` / `FLAT_VIDEO` belong inside flat scenes only — for a poster or billboard in a 3D tour use `GUI_IMAGE`, a textured `PRIMITIVE_*`, or a model.
 13. **`LOTTIE` renders through the GUI stack**, so it is sized and placed like `GUI_IMAGE` (via `gui.currentValue`) even though it has no `GUI_` prefix.
-14. **`CUSTOM_CODE` is an entity built from code**, with its block at `customCode` (not in `actions`). Creating one through MCP is blocked until the server ships a cyango-shared containing `EntityTypes.CUSTOM_CODE`; patching an existing one works. Actions and entity blocks share one scope, so read [custom-code.md](references/custom-code.md) before writing either: the difference is lifetime, and an action that builds into `group` leaks. Write `code` only; `compiledCode` is produced by the editor on save.
+14. **`CUSTOM_CODE` is an entity built from code**, with its block at `customCode` (not in `actions`). Creating one through MCP is blocked until the server ships a cyango-shared containing `EntityTypes.CUSTOM_CODE`; patching an existing one works. Actions and entity blocks share one scope, so read [custom-code.md](references/custom-code.md) before writing either: the difference is lifetime, and an action that builds into `group` leaks. Write `code` only; `compiledCode` is produced by the editor on save. **Before adding custom code**, run the decision flow in [entity-choice.md](rules/entity-choice.md) — prefer built-in entities and actions when they fit.
 15. **Scene switches gate entity features**: entity `physics` needs scene `physics.enabled`, light `castShadow` needs scene `shadowsEnabled`.
 16. **Reuse matching scenes and entities** instead of creating near-duplicates.
 
@@ -52,6 +52,7 @@ Types that no longer exist: `HOTSPOT*`, `EMBED_*` entities and `LIVESTREAM_*` sc
 | Responsive / mobile / tablet layout | [gui-desktop-first.md](rules/gui-desktop-first.md) |
 | A new scene, scene settings, navigation between scenes | [scenes.md](references/scenes/scenes.md) |
 | Click behavior, show/hide, go-to-scene, media control, GPS | [actions.md](references/actions/actions.md) |
+| Which entity type or custom-code surface to use | [entity-choice.md](rules/entity-choice.md) → then [custom-code.md](references/custom-code.md) if code is needed |
 | Custom JavaScript, story Head/Footer code | [custom-code.md](references/custom-code.md) |
 | Importing files, placing existing assets | [assets-common.md](references/assets/assets-common.md) |
 | Stock photos, videos, HDRIs or models the user does not have | [assets-common.md](references/assets/assets-common.md#provider-public-assets) — `list_asset_providers` → `search_provider_assets` → `insert_assets` |
@@ -78,6 +79,7 @@ Paths are relative to this skill folder (`cyango-mcp/`).
 | [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md) | World vs local transforms, `parentIndex`, composing entity trees. |
 | [gui-desktop-first.md](rules/gui-desktop-first.md) | Breakpoint cascade, `gui.currentValue` path format, when to touch tablet/mobile. |
 | [gui-design-best-practices.md](rules/gui-design-best-practices.md) | Recipes, icons, sizing for 1920 × 1080, screen vs world GUI, parent-chain troubleshooting. |
+| [entity-choice.md](rules/entity-choice.md) | Decision flow: built-in entity vs action vs `CUSTOM_CODE` entity/action vs Head/Footer; challenge → first choice table. |
 
 ### References (what the data is)
 

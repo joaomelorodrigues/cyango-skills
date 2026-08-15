@@ -4,6 +4,8 @@ Cyango has three custom-code surfaces. They share one block shape, `ICustomCode`
 (`code`, `compiledCode`, `errorMessages`, `params`), one editor and one save-time compile. What
 differs is the host: when the block runs and what it receives.
 
+**Not sure which surface or whether to use a built-in entity instead?** Start with [entity-choice.md](../rules/entity-choice.md).
+
 | Surface | Stored at | Runs | Runtime scope | MCP status |
 |---------|-----------|------|---------------|------------|
 | `CUSTOM_CODE` action | Entity `actions.currentValue` or scene `sceneActions` | Once, when its event fires | The shared scope | Writable through current MCP tools |
