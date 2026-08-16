@@ -13,10 +13,15 @@ export function readPackageVersion(pkgRoot) {
 }
 
 const VERSION_LINE_RE = /\*\*@cyango-tools\/skills version:\*\* `[^`]*`/;
+const COMMENTED_VERSION_RE =
+  /<!--\s*\*\*@cyango-tools\/skills version:\*\* `[^`]*`\s*-->\n?/;
 
 /** Ensure SKILL.md documents the @cyango-tools/skills package version (insert or replace). */
 export function patchSkillMdContent(md, version) {
   const line = `**@cyango-tools/skills version:** \`${version}\``;
+  if (COMMENTED_VERSION_RE.test(md)) {
+    return md.replace(COMMENTED_VERSION_RE, `${line}\n`);
+  }
   if (VERSION_LINE_RE.test(md)) {
     return md.replace(VERSION_LINE_RE, line);
   }
