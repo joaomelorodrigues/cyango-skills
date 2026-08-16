@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { execSync } from "child_process";
+import fs from "fs";
+import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 import { readPackageVersion } from "../bin/skill-version-patch.mjs";
@@ -7,8 +9,6 @@ import { readPackageVersion } from "../bin/skill-version-patch.mjs";
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const repo = "joaomelorodrigues/cyango-skills";
 const skill = "cyango-mcp";
-const skillFile = "skills/cyango-mcp/SKILL.md";
-const TELEMETRY_URL = "https://add-skill.vercel.sh/t";
 const SKILL_PAGE = `https://skills.sh/${repo}/${skill}`;
 
 function run(cmd, opts = {}) {
@@ -49,7 +49,7 @@ function ensureGitPushed() {
   }
 }
 
-async function sendInstallTelemetry(version) {
+function seedSkillsShListing(version) {
   if (process.env.DISABLE_TELEMETRY || process.env.DO_NOT_TRACK) {
     console.warn(
       "publish-skills-sh: telemetry disabled (DISABLE_TELEMETRY or DO_NOT_TRACK). skills.sh will not update.",
@@ -57,32 +57,32 @@ async function sendInstallTelemetry(version) {
     return;
   }
 
-  const params = new URLSearchParams({
-    event: "install",
-    source: repo,
-    skills: skill,
-    agents: "release-script",
-    skillFiles: JSON.stringify({ [skill]: skillFile }),
-    installUrl: `https://github.com/${repo}`,
-    metadata: JSON.stringify({
-      version,
-      package: "@cyango-tools/skills",
-      source: "release",
-    }),
-  });
-
-  const response = await fetch(`${TELEMETRY_URL}?${params.toString()}`);
-  if (!response.ok) {
-    throw new Error(`skills.sh telemetry failed (${response.status})`);
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cyango-skills-sh-seed-"));
+  try {
+    execSync(`npx --yes skills add ${repo} --skill ${skill} -y`, {
+      cwd: tmpDir,
+      stdio: "inherit",
+      env: process.env,
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+
+  console.log(
+    `Seeded skills.sh listing for ${repo}@${skill} (v${version}) via npx skills add`,
+  );
 }
 
-async function waitForSkillPage(maxAttempts = 12, delayMs = 5000) {
+async function waitForSkillPage(version, maxAttempts = 12, delayMs = 5000) {
+  const versionNeedle = `\`${version}\``;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       const response = await fetch(SKILL_PAGE, { redirect: "follow" });
       if (response.ok) {
-        return true;
+        const html = await response.text();
+        if (html.includes(versionNeedle)) {
+          return true;
+        }
       }
     } catch {
       // retry
@@ -90,7 +90,7 @@ async function waitForSkillPage(maxAttempts = 12, delayMs = 5000) {
 
     if (attempt < maxAttempts) {
       console.log(
-        `Waiting for skills.sh to index ${skill} (${attempt}/${maxAttempts})…`,
+        `Waiting for skills.sh to show v${version} (${attempt}/${maxAttempts})…`,
       );
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
@@ -101,16 +101,15 @@ async function waitForSkillPage(maxAttempts = 12, delayMs = 5000) {
 
 const version = readPackageVersion(root);
 ensureGitPushed();
-await sendInstallTelemetry(version);
-console.log(`Sent skills.sh telemetry for ${repo}@${skill} (v${version})`);
+seedSkillsShListing(version);
 
-const indexed = await waitForSkillPage();
+const indexed = await waitForSkillPage(version);
 if (indexed) {
   console.log(`Live: ${SKILL_PAGE}`);
 } else {
   console.warn(
     [
-      "Telemetry sent, but the skills.sh page is not live yet.",
+      "Install telemetry sent, but skills.sh has not picked up the new version yet.",
       "This can take a few minutes. Check later:",
       SKILL_PAGE,
     ].join("\n"),
