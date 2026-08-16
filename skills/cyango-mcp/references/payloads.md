@@ -2,13 +2,13 @@
 
 Copy these shapes. Every example is a complete, valid tool call — replace ids and values, do not restructure. Field meanings live in the per-topic references; this file only fixes the shape.
 
-The two mistakes these examples exist to prevent: writing a bare property path where a breakpoint/state slot is required, and splitting one logical change across many calls.
+The two mistakes these examples exist to prevent: writing a bare property path where a **slot** (`<breakpoint>.<state>`) is required, and splitting one **wave** across many calls.
 
 ---
 
 ## `add_entities` — 3D entities with hierarchy
 
-Parents must come before their children. Reference an in-batch parent by `parentIndex` (0-based, index within this call); use `parentEntityId` only for an entity that already exists.
+Parents must come before their children. Reference a parent inside the same wave by `parentIndex` (0-based, index within this call); use `parentEntityId` only for an entity that already exists.
 
 ```json
 {

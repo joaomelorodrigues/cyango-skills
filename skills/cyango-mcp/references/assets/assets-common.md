@@ -226,9 +226,9 @@ If intent is ambiguous, ask rather than guessing — and never use `FLAT_IMAGE` 
 
 ## Batch rules
 
-- Prefer one `insert_assets` call for the full insertion wave (all rows and scenes in one batch when practical), not repeated single-row inserts or redundant extra tool calls.
-- For parent-child chains within one batch, use `parentIndex` so parents can be referenced before IDs are known.
-- Avoid interleaving `add_entities` and `insert_assets` against the same target chain in separate calls.
+- One `insert_assets` call carries the full insertion **wave**: every row and every scene, not repeated single-row inserts.
+- For parent-child chains inside one wave, use `parentIndex` so parents can be referenced before ids are known.
+- Keep `add_entities` and `insert_assets` against the same target chain out of separate interleaved calls.
 
 ## `remove_assets` input
 

@@ -8,16 +8,16 @@ Pick the **simplest built-in type first**. Reach for custom code only when no en
 Need something in the story?
 │
 ├─ Story-wide script (analytics, third-party boot) with no cyango API?
-│  └─ Story Head/Footer code — [custom-code.md](../references/custom-code.md#story-headfooter-code)
+│  └─ Story Head/Footer code: [custom-code.md](../references/custom-code.md#story-headfooter-code)
 │
 ├─ Runs once on an event (click, scene ready, timeline hook)?
-│  ├─ Matches a built-in ActionType? → that action — [actions.md](../references/actions/actions.md)
+│  ├─ Matches a built-in ActionType? → that action: [actions.md](../references/actions/actions.md)
 │  └─ Needs JS (state, prefab spawn, multi-step logic)? → CUSTOM_CODE action
 │
 ├─ Visible content that persists in the scene?
 │  ├─ Matches a built-in entity type? → that entity (see table below)
 │  └─ Procedural mesh, per-frame animation, uikitml(), or tunable params in inspector?
-│     └─ GUI_CUSTOM_CODE entity — [custom-code.md](../references/custom-code.md#custom-code-entities)
+│     └─ GUI_CUSTOM_CODE entity: [custom-code.md](../references/custom-code.md#custom-code-entities)
 │
 └─ Layout / grouping only, no render?
    └─ GROUP (or NONE for invisible logic anchor)
@@ -28,36 +28,27 @@ Need something in the story?
 | The challenge | Use first | Not custom code when… |
 |---------------|-----------|------------------------|
 | Button, menu, HUD, form, modal chrome | `GUI_*` under `GUI_CONTAINER` / `GUI_SCREEN` | Layout, styling, and click → GUI + built-in actions |
-| Icon control (close, play, menu) | `GUI_ICON` + container | Never a glyph in `GUI_TEXT` |
+| Icon control (close, play, menu) | `GUI_ICON` + container | A Lucide `iconSrc` covers it |
 | Click → go to scene / show panel / open URL | `GO_TO_SCENE`, `SHOW_ENTITY`, `OPEN_URL`, … | One action covers it |
 | Toggle visibility across GUI states | `SHOW_ENTITY` / `HIDE_ENTITY` on containers | No JS needed |
 | Image, video, audio in scene | `FLAT_*`, `GUI_IMAGE`, `AUDIO_*`, asset drop | Editor infers type from asset |
-| 360° / 180° tour | Panorama entities + matching scene type | — |
-| 3D model or splat | `insert_assets` → model / splat entity | — |
-| Simple shape or colored surface | `PRIMITIVE_*` + material | — |
-| Lottie or spritesheet loop | `LOTTIE` or `SPRITE` | Sized like GUI via `gui.currentValue` |
+| 360° / 180° tour | Panorama entities + matching scene type | |
+| 3D model or splat | `insert_assets` → model / splat entity | |
+| Simple shape or colored surface | `PRIMITIVE_*` + material | |
+| Lottie or spritesheet loop | `LOTTIE` or `SPRITE` | Sized like GUI, through slots |
 | Lighting / shadows / sky | `*_LIGHT`, `SKYBOX`, `HDR` | Scene flags gate physics/shadows |
-| 3D label in world | `TEXT_3D` | — |
-| Camera move on click | `CAMERA_LOOK_AT` | — |
+| 3D label in world | `TEXT_3D` | |
+| Camera move on click | `CAMERA_LOOK_AT` | |
 | Map recenter on user GPS | `CENTER_GPS` | No target ids required |
 | Timed sequence of show/hide / media | Timeline + entity actions | Prefer timeline over frame loops |
-| Runtime counter, global state, branching | `CUSTOM_CODE` action + `cyango.utils.setGlobalVar` | — |
+| Runtime counter, global state, branching | `CUSTOM_CODE` action + `cyango.utils.setGlobalVar` | |
 | Spawn prefab from logic | `INSTANTIATE_PREFAB` action, or `CUSTOM_CODE` action if conditional | Whitelist prefab in `customCodePrefabIds` when code-only |
 | Build mesh in code, spin every frame, instancing | `GUI_CUSTOM_CODE` entity | Actions must not build into `group` |
 | Dynamic screen UI from markup string | `GUI_CUSTOM_CODE` entity under `GUI_SCREEN` + `uikitml()` | `uikitml()` throws in actions |
 | Author-tunable knobs without opening code | `GUI_CUSTOM_CODE` entity `params` | Action params are MCP-only, not inspector-friendly |
 | Multi-entity property patch at runtime | `CUSTOM_CODE` action → `cyango.storyState.updateStoryData` | Or several `CHANGE_ENTITY_PROPERTY` if static |
 
-## Custom code: three surfaces
-
-| Surface | When | Lifetime |
-|---------|------|----------|
-| Built-in **action** | Event-fired logic; no persistent mesh | Runs once per trigger |
-| **`CUSTOM_CODE` action** | Same, but needs JS / `cyango` APIs | Runs once; return value discarded; never use `group` or `uikitml()` |
-| **`GUI_CUSTOM_CODE` entity** | Scene object built from code; optional `update`/`dispose` | Mount → every frame → dispose |
-| **Head/Footer** | External scripts, no `cyango` | Story load |
-
-Full API, sandbox, and MCP limits: [custom-code.md](../references/custom-code.md).
+Once the flow lands on a custom-code surface, [custom-code.md](../references/custom-code.md) has the API, the sandbox, the lifetimes and the current MCP limits for all three.
 
 ## Built-in entity families (cheat sheet)
 
@@ -77,7 +68,7 @@ Full API, sandbox, and MCP limits: [custom-code.md](../references/custom-code.md
 
 Deep defaults: [non-gui-defaults.md](../references/entities/non-gui-defaults.md), [gui-properties.md](../references/entities/gui/gui-properties.md).
 
-## Red flags — wrong tool
+## Red flags: wrong tool
 
 | Symptom | Likely mistake | Fix |
 |---------|----------------|-----|
@@ -86,8 +77,6 @@ Deep defaults: [non-gui-defaults.md](../references/entities/non-gui-defaults.md)
 | Full UI built in action | Used `uikitml()` in action | `GUI_CUSTOM_CODE` entity under GUI parent |
 | 50 GUI patches for one dynamic list | Patching entities from code repeatedly | `GUI_CUSTOM_CODE` entity or one container + show/hide |
 | Analytics in entity code | Head/Footer task | `settings.customHeadCode` / `customFooterCode` |
-| `add_entities` rejects `GUI_CUSTOM_CODE` | MCP server lacks type enum | User adds via **Add Entities → Advanced → Custom Code**; patch `customCode` with `update_entities` |
+| `add_entities` rejects `GUI_CUSTOM_CODE` | MCP server lacks the type enum | User adds via **Add Entities → Advanced → Custom Code**, then patch `customCode` with `update_entities` |
 
-## MCP note
-
-Creating `GUI_CUSTOM_CODE` entities through `add_entities` may be blocked until the MCP server ships `EntityTypes.GUI_CUSTOM_CODE`. Patching `customCode` on an existing entity always works. Prefer built-in types when MCP can create them in one batch.
+A built-in type that MCP can create in one wave beats a surface the user has to add by hand.

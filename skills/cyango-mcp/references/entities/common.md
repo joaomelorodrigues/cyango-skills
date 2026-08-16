@@ -27,13 +27,15 @@ Actions are attached as `actions.currentValue` (`IAction[]`).
 
 ## Which types accept children
 
-Parenting is not universal. These types can hold children:
+**This section is the single source for the list. Every other file names the rule and links here.**
+
+Parenting is not universal. Exactly these types can hold children:
 
 `GROUP`, `GROUP_BOX`, `PRIMITIVE_*`, `GUI_CONTAINER`, `GUI_SCREEN`, `FLAT_IMAGE`, `FLAT_VIDEO`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CAMERA`, `PLAYER`, `WEBCAM`, `FACE_MESH`, `GUI_CUSTOM_CODE`.
 
-Every other type — `SPLAT`, `CUSTOM_3D_MODEL`, all `*_LIGHT`, `PANORAMA*`, `AUDIO_*`, `HDR`, `SKYBOX`, `MAP_*`, `LOTTIE`, `SPRITE`, `SUBTITLE`, and the leaf `GUI_*` types — is a leaf. The rule lives in `PARENT_CAPABLE_ENTITY_TYPES` in `cyango-shared` and is enforced on every write path: the scene tree refuses the drop, paste and create skip the parent, and the MCP bridge places the entity at the scene root instead.
+Every other type is a **leaf**: `SPLAT`, `CUSTOM_3D_MODEL`, all `*_LIGHT`, `PANORAMA*`, `AUDIO_*`, `HDR`, `SKYBOX`, `MAP_*`, `LOTTIE`, `SPRITE`, `SUBTITLE`, and the leaf `GUI_*` types. The rule lives in `PARENT_CAPABLE_ENTITY_TYPES` in `cyango-shared` and is enforced on every write path: the scene tree refuses the drop, paste and create skip the parent, and the MCP bridge places the entity at the scene root instead.
 
-To pair a leaf entity with labels, hotspots or colliders, put them in a `GROUP` as **siblings**.
+To pair a leaf with labels, hotspots or colliders, put them in a `GROUP` as **siblings**.
 
 Failure mode when you ignore this: the write reports success, `parentEntityId` comes back as `""`, and the entity sits at the scene root.
 

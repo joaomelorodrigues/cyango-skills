@@ -69,7 +69,7 @@ Enum in `cyango-shared` — the string values are the runtime tokens (e.g. `magi
 
 ## `SPLAT` takes no children
 
-A `SPLAT` is a leaf: the scene tree refuses the drop and the MCP bridge places the entity at the scene root instead. To attach labels, hotspots, colliders or a GUI panel to a scan, wrap them together:
+A `SPLAT` is a [leaf](../common.md#which-types-accept-children): the scene tree refuses the drop and the MCP bridge places the entity at the scene root instead. To attach labels, hotspots, colliders or a GUI panel to a scan, wrap them together:
 
 ```
 GROUP                    ← position/rotate the whole assembly here

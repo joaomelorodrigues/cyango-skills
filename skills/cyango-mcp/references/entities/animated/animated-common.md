@@ -76,4 +76,4 @@ Cost note: `LOTTIE` redraws and re-uploads a `resolution`×`resolution` texture 
 - `lottie.resolution`
 - `spritesheet.cols` / `spritesheet.rows` / `spritesheet.fps`
 - `animations.currentValue` (full clip array)
-- `gui.currentValue.desktop.default.width` / `height` (LOTTIE sizing)
+- `gui.currentValue.desktop.default.width` / `height` (LOTTIE sizing, same slots as `GUI_IMAGE`)
