@@ -1,8 +1,10 @@
 # Timeline and animation
 
-The scene timeline schedules playback: language-specific duration, layered tracks, and keyed values. Most entity fields that change over time are wrapped in `IAnimation<T>` — a current value plus optional keyframes on the same clock.
+The scene timeline schedules playback: language-specific duration, layered tracks, and keyed values. Most entity fields that change over time are wrapped in `IAnimation<T>`, a current value plus optional keyframes on the same clock.
 
 Runtime control (play/pause/mute) uses timeline `ActionType` values (`PLAY_TIMELINE`, `PAUSE_TIMELINE`, `STOP_TIMELINE`, `MUTE_TIMELINE`, `UNMUTE_TIMELINE`).
+
+Field shapes for `ITimeline`, `ITimelineDuration`, `IAnimation<T>`, `IKeyframe<T>` and `IMediaClip` are in [cyango-shared-types.md](../cyango-shared-types.md). This page covers how they fit together.
 
 ---
 
@@ -10,66 +12,10 @@ Runtime control (play/pause/mute) uses timeline `ActionType` values (`PLAY_TIMEL
 
 | Location | What |
 |----------|------|
-| **Scene** | `timeline?: ITimeline` — id, name, per-language durations. |
+| **Scene** | `timeline?: ITimeline`, id, name, per-language durations. |
 | **Entity** | Many props are `IAnimation<…>` (position, rotation, scale, material, media, gui, actions). Each has a value and optional keyframes. |
 
----
-
-## `ITimeline`
-
-| Field | Notes |
-|-------|-------|
-| `id` | Timeline id. |
-| `name` | Display name. |
-| `durations` | `ITimelineDuration[]` — one per language. |
-
-### `ITimelineDuration`
-
-| Field | Notes |
-|-------|-------|
-| `language` | Which language this row applies to. |
-| `duration` | Length in ms, or `0` for indefinite / interaction-driven. |
-
----
-
-## `IAnimation<T>`
-
-| Field | Notes |
-|-------|-------|
-| `id` | Track id. |
-| `currentValue` | `T` — value at base state (also used when there are no keyframes). |
-| `keyframes` | `IKeyframe<T>[]` — segments keyed to the scene timeline (ms). |
-| `repeat` | How many times the track repeats; `-1` = infinite. |
-| `excludeFromMasterTimeline` | If true, this track does not run with the master timeline — only when driven (e.g. by an action). |
-
----
-
-## `IKeyframe<T>`
-
-| Field | Notes |
-|-------|-------|
-| `id` | Keyframe id. |
-| `startTime` / `endTime` | Ms on the scene timeline. |
-| `value` | `T` at this segment. |
-| `ease` | GSAP ease name. |
-| `connected` | Whether this segment interpolates with neighbors. |
-
----
-
-## `IMediaClip`
-
-Used inside `IAnimation<IMediaClip>` (entity `media`).
-
-| Field | Notes |
-|-------|-------|
-| `name` | Clip label. |
-| `duration` | End ms relative to the timeline. |
-| `originalAssetId` | Uploaded asset reference. |
-| `speed` | Playback speed. |
-| `volume` | 0–1. |
-| `loop` / `controls` | Playback flags. |
-| `play` / `unmuted` | Initial play / mute state. |
-| `commandType` / `from` / `to` | Backend trim — start/end ms in source file. |
+A duration of `0` means indefinite: the scene runs until the viewer interacts, which is what a static panorama wants.
 
 ---
 
@@ -83,7 +29,7 @@ Used inside `IAnimation<IMediaClip>` (entity `media`).
 | `SPRITE` | A frame range in the spritesheet grid (`startFrame`, `endFrame`, `fps`). |
 | `LOTTIE` | A frame range of the Bodymovin document (same fields as `SPRITE`). |
 
-All three are created with one looping `"Main"` clip. Patch `animations.currentValue` with the **full clip array** — it is replaced, not merged. Details in [animated-common.md](../entities/animated/animated-common.md).
+All three are created with one looping `"Main"` clip. Patch `animations.currentValue` with the **full clip array**; it is replaced, not merged. Details in [animated-common.md](../entities/animated/animated-common.md).
 
 ---
 

@@ -5,30 +5,11 @@ All **`GUI_*`** types use **`gui?: IAnimation<IEntityGUI>`**. The animated value
 
 ---
 
-## `IEntityGUI`
+## Slots: breakpoint and state
 
-Three breakpoints; each holds stateful style blocks.
+`IEntityGUI` holds three breakpoints (`desktop`, `tablet`, `mobile`), and each holds up to four `IGUIStates`: `default` (the base look, required), `hover`, `active` and `focus`. A breakpoint plus a state is one **slot**, and each slot is an `IGUIProperties`.
 
-| Key | Notes |
-|-----|-------|
-| `desktop` | Default/base breakpoint. |
-| `tablet` | Tablet override breakpoint. |
-| `mobile` | Mobile override breakpoint. |
-
-Omitted breakpoint → runtime cascade (desktop-first).
-
----
-
-## `IGUIStates`
-
-Per breakpoint: up to four states; each is **`IGUIProperties`**.
-
-| State | When |
-|-------|------|
-| `default` | Base look (required). |
-| `hover` | Pointer over. |
-| `active` | Pressed / toggled on. |
-| `focus` | Keyboard / focus ring. |
+An omitted breakpoint falls back through the desktop-first cascade. See [gui-desktop-first.md](../../../rules/gui-desktop-first.md).
 
 ---
 

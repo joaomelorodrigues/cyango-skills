@@ -40,6 +40,20 @@ npx @cyango-tools/skills@latest install cyango-mcp
 
 Use `@latest` (or a pinned version) so `npx` does not keep an old cached tarball of the CLI.
 
+## Generated type reference
+
+`skills/cyango-mcp/references/cyango-shared-types.md` is generated, not hand-written. It gives the agent the exact shape of every story field, so the markdown pages can cover behaviour instead of trying to enumerate fields.
+
+```bash
+npm run types:skill
+```
+
+`prepack` runs it automatically, so a release always ships types matching the current `cyango-shared`.
+
+**The allowlist in `scripts/extract-skill-types.mjs` is a disclosure boundary.** This package is public on npm and GitHub. The script emits only the story-editing modules, drops runtime helpers, scrubs internal notes out of doc comments, and **fails the build** if a billing, auth, storage or permission term reaches a declaration. If it refuses to write, do not loosen `SENSITIVE_PATTERNS` to get past it. Add the offending declaration to `DENY_TYPES`, or its module to `DENY_MODULES`.
+
+Source resolution order, first hit wins: `--types-dir=<path>`, `CYANGO_SHARED_TYPES`, a sibling `../cyango-shared/src/types`, then `dist/types` from node_modules. Source is preferred because TypeScript declaration emit drops the trailing `//` comments, and those carry most of the meaning. When no source is found the committed file is kept, so publishing never silently ships an empty reference.
+
 ## Publishing a release
 
 Releases sync the skill version, push to GitHub, publish to npm, and seed skills.sh telemetry.
@@ -50,7 +64,7 @@ npm run release:patch   # or release:minor / release:major
 
 What `release:*` does:
 
-1. Bump `package.json` and sync the version line in `skills/cyango-mcp/SKILL.md`
+1. Regenerate `references/cyango-shared-types.md`, bump `package.json`, and sync the version line in `skills/cyango-mcp/SKILL.md`
 2. Commit, tag (`v<version>`), and push to `origin`
 3. Publish `@cyango-tools/skills` to npmjs
 4. Run `npx skills add joaomelorodrigues/cyango-skills --skill cyango-mcp` (skills.sh telemetry)

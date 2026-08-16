@@ -8,20 +8,7 @@ Animation/timeline fields use `IAnimation<T>` wrappers (`currentValue`, optional
 
 Actions are attached as `actions.currentValue` (`IAction[]`).
 
----
-
-## Identity & hierarchy
-
-| Field | Notes |
-|-------|-------|
-| `id` | Stable id (references, actions, parenting). |
-| `name` | Display / editor name. |
-| `sceneId` | Which scene owns this entity. |
-| `entityType` | `EntityTypes` — discriminator; drives which optional blocks apply. |
-| `parentEntityId` | Parent entity id, or unset for scene-root entities. |
-| `children` | Optional nested `IEntity[]` (hierarchy is often flat with `parentEntityId`). |
-| `locked` | Editor treats entity as non-editable. |
-| `isPlaceholder` | Renders nothing; useful as group / template anchor. |
+All 48 `IEntity` fields are in [cyango-shared-types.md](../cyango-shared-types.md), including `visibility` (`IVisibility`), `physics`, `prefab`, `mapProperties` and the rest. This page covers the parts where the runtime does something the field name does not imply.
 
 ---
 
@@ -43,50 +30,23 @@ Failure mode when you ignore this: the write reports success, `parentEntityId` c
 
 ## Transforms & animation
 
-Most "live" fields use `IAnimation<T>`: `currentValue` plus optional `keyframes`, `repeat`, `excludeFromMasterTimeline`.
+Most "live" fields wrap their value in `IAnimation<T>`: `currentValue` plus optional `keyframes`, `repeat`, `excludeFromMasterTimeline`. That covers `position` / `rotation` / `scale` (3-number arrays), `geometry`, `material`, `media`, `gui`, `light`, `camera`, `player` and `actions`.
 
-| Field | Typical `T` |
-|-------|-------------|
-| `position` / `rotation` / `scale` | Number arrays (length 3). |
-| `geometry` | `IEntityGeometry` (primitive + dimensions). |
-| `material` | `IEntityMaterial` (`materialType` + Three.js-style props). |
-| `media` | `IMediaClip` (video/audio clip on the timeline). |
-| `gui` | `IEntityGUI` (per-breakpoint UI states). |
-| `light` / `camera` / `player` / … | Type-specific structs — see family docs below. |
-| `actions` | `IAction[]` — can be keyed like other tracks. |
+Two consequences worth remembering: a patch path almost always goes through `.currentValue`, and `actions` is a keyed track like any other.
 
 ---
 
 ## Visibility
 
-`visibility` uses **`IVisibility`** — same shape as on scenes: optional booleans (and one language list) that hide this entity in specific contexts. If a flag is unset, it does not apply.
+`visibility` is an `IVisibility`, the same shape scenes use: optional booleans plus one language list that hide this entity in specific contexts. **An unset flag does not apply**, so hiding on one device never implies anything about the others. The full flag list is in [cyango-shared-types.md](../cyango-shared-types.md).
 
-| Field | Role |
-|-------|------|
-| `hiddenTotally` | Hidden in all cases (strongest hide). |
-| `hiddenInDesktop` | Hidden in desktop layout / viewport. |
-| `hiddenInTablet` | Hidden on tablet breakpoint. |
-| `hiddenInMobile` | Hidden on mobile breakpoint. |
-| `hiddenInMobileAR` | Hidden in mobile AR. |
-| `hiddenInVR` | Hidden in VR. |
-| `hiddenInAR` | Hidden in AR. |
-| `hideInTimeline` | Hidden on the timeline (editor / playback strip). |
-| `hiddenInLanguages` | Hide only for these languages (`LanguageTypes[]`). |
-| `hiddenInIPhone` | Hidden on iPhone. |
-| `hiddenInIPad` | Hidden on iPad. |
-| `hiddenInAndroid` | Hidden on Android devices. |
-| `hiddenInPWAAndroid` | Hidden in Android PWA. |
-| `hiddenInPWAiOS` | Hidden in iOS PWA. |
+`hiddenTotally` is the strongest hide and wins over every other flag.
 
 ---
 
 ## Render order
 
-`renderOrder` is an optional top-level number on `IEntity`. Use it only when visual draw order needs an explicit override, for example overlapping transparent planes, GUI-in-world panels, splats, or media surfaces.
-
-| Field | Role |
-|-------|------|
-| `renderOrder` | Three.js draw-order override. Higher finite numbers draw later within the same opaque/transparent render pass. |
+`renderOrder` is an optional top-level number on `IEntity`, a Three.js draw-order override where higher finite numbers draw later within the same opaque/transparent pass. Use it only when draw order needs an explicit override, for example overlapping transparent planes, GUI-in-world panels, splats, or media surfaces.
 
 Important behavior:
 
@@ -99,34 +59,20 @@ Use `update_entities` with `propertyPath: "renderOrder"` to set or clear it.
 
 ---
 
-## Other fields
+## Fields that behave unexpectedly
 
-| Field | Notes |
-|-------|-------|
-| `assetDomElementId` | Links DOM media to asset (composite id: `asset.id + entity.id`). |
-| `tags` | `ITag[]` — `{ name, color, textColor? }` for filtering and action targeting. |
-| `physics` | `IEntityPhysics` — Rapier rigid body: `enabled`, `type`, `shape`, mass, friction, colliders. |
-| `layer` | `IAnimationLayer` — editor UI only (locked, duration, expanded). |
-| `handles` | `IEntityHandles` — gizmo manipulation in editor. |
-| `billboard` | Face-camera behavior. |
-| `prefab` | `IEntityPrefabLink` — prefab id, overrides, instance group. |
-| `animations` | `IAnimation<IEntityAnimation[]>` — clips for `CUSTOM_3D_MODEL`, `SPRITE`, and `LOTTIE`. Replaced wholesale on patch. |
-| `spritesheet` | `IEntitySpritesheet` — `cols` / `rows` / `fps` grid for `SPRITE`. |
-| `lottie` | `IEntityLottie` — `resolution` raster edge for `LOTTIE`. |
-| `model3D` | `IEntityModel3D` — model-specific options on `CUSTOM_3D_MODEL`. |
-| `uniformScale` | Keep scale uniform across axes. |
-| `resizeToUnitBox` | Opt-in normalisation of the content to a 1-unit bounding box. Honoured by `CUSTOM_3D_MODEL` and the GUI-3D wrapper; other types ignore it. Unset keeps each renderer's existing behavior. |
-| `teleport` | `IEntityTeleport` — teleport target behavior. |
-| `mapProperties` | `IEntityMapProperties` — per-entity map placement (`MAP_*` scenes). |
-| `player` | `IAnimation<IEntityPlayer>` — locomotion/player config on `PLAYER`. |
-| `xrStore` | `IEntityXRStore` — XR store product metadata. |
-| `tooltip` | Tooltip string. |
+| Field | What the type does not tell you |
+|-------|--------------------------------|
+| `assetDomElementId` | A composite id, `asset.id + entity.id`, never a bare asset id. Modal payloads use the same rule. |
+| `animations` | Replaced wholesale on patch. Send the complete clip array or the old clips are gone. |
+| `resizeToUnitBox` | Honoured by `CUSTOM_3D_MODEL` and the GUI-3D wrapper only. Other types ignore it, and unset keeps each renderer's existing behavior. |
+| `layer` / `handles` | Editor UI state. Writing them changes nothing in the viewport. |
 
 ---
 
 ## Per-family docs
 
-Each row names the file that defines that family's `entityType` values, roles, and payloads.
+Each row names the file that covers that family's behaviour, defaults and gotchas.
 
 | Family | File |
 |--------|------|

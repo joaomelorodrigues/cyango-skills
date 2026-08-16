@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "sync:skill-version": "node scripts/sync-skill-version.mjs",
-    "prepack": "npm run sync:skill-version",
+    "types:skill": "node scripts/extract-skill-types.mjs",
+    "prepack": "npm run types:skill && npm run sync:skill-version",
     "bump:patch": "npm version patch --no-git-tag-version",
     "bump:minor": "npm version minor --no-git-tag-version",
     "bump:major": "npm version major --no-git-tag-version",
@@ -31,5 +32,8 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

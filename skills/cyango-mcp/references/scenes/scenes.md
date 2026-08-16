@@ -6,19 +6,15 @@ A story is an ordered list of scenes. Each scene has `entities[]`, optional `tim
 
 ## Scene types
 
-| Scene type | Notes |
-|------------|-------|
-| `TOUR_3D` | First- or third-person movement in 3D with colliders. Default scene for interactive experiences including 2D-style GUI overlays. |
-| `MODEL_VIEWER` | Camera orbits around a 3D model target. |
-| `PANORAMA_360` | Fixed camera; 360° panorama (image or video). |
-| `PANORAMA_180_SCENE` | Fixed camera; 180° panorama. |
-| `FLAT_SCENE` | Fixed camera, no orbit controls — flat media layer in front of the camera. |
-| `MAP_2D_SCENE` / `MAP_3D_SCENE` | Map scenes. `MAP_2D_SCENE` gets a top-down camera at `[0, 1000000, 0]`; `MAP_3D_SCENE` is not offered in the Studio dialog yet. |
-| `WEBCAM_SCENE` | Live webcam feed. |
+Every `SceneTypes` value and its meaning is in [cyango-shared-types.md](../cyango-shared-types.md), `enum SceneTypes`. Reach for `TOUR_3D` by default: it carries interactive experiences including 2D-style GUI overlays.
 
-Livestream scene types (`LIVESTREAM_PANORAMA`, `LIVESTREAM_180_VIDEO_SCENE`) were removed from `SceneTypes`; do not use them.
+What the enum does not tell you:
 
-Use these strings for `sceneType`; compare with `get_story_state` / `get_scene` if rejected.
+- **Write the value, not the key.** `PANORAMA_180`'s value is the string `"PANORAMA_180_SCENE"`. Every other type's key and value match.
+- `MAP_2D_SCENE` gets a top-down camera at `[0, 1000000, 0]`. `MAP_3D_SCENE` is not offered in the Studio dialog yet.
+- Livestream scene types (`LIVESTREAM_PANORAMA`, `LIVESTREAM_180_VIDEO_SCENE`) were removed from `SceneTypes`; do not use them.
+
+Compare with `get_story_state` / `get_scene` if a `sceneType` is rejected.
 
 ### What MCP seeds per scene type
 
@@ -39,26 +35,15 @@ Use these strings for `sceneType`; compare with `get_story_state` / `get_scene` 
 
 ## Scene object fields
 
-| Field | Role |
-|-------|------|
-| `id` | Scene id (navigation, `GO_TO_SCENE`, deep links). |
-| `name` | Display name. |
-| `sceneType` | One of the types above. |
-| `entities` | Entities in this scene; hierarchy via parent ids. |
-| `timeline` | Optional scene-level `ITimeline`. |
-| `visibility` | Optional — `IVisibility` (per-device/language/timeline hiding). |
-| `sceneActions` | Lifecycle `IAction[]` (e.g. `ON_SCENE_ENTER`). |
-| `sceneColor` | Background color. |
-| `physics` | `enabled`, `gravity`, `debug`. |
-| `tags` | Tags for filtering / actions. |
-| `effects` | Post-processing stack (bloom, DOF, color grading, anti-aliasing). |
-| `toneMapping` | Renderer tone mapping. |
-| `title` | Localized title (`{ "en-US": "Lobby" }`) — what Studio shows when `name` is unset. |
-| `thumbnailAsset` | Scene thumbnail; `insert_assets` sets it automatically when a panorama lands in a panorama scene. |
-| `hasCustomDuration` | The timeline duration was typed by the user instead of derived from content. |
-| `hideSystemTheme` | Hide the system theme UI in this scene. |
-| `shadowsEnabled` | Turn the canvas shadow map on for this scene. Required before any light's `castShadow` produces visible shadows. |
-| `forcedQualityLevel` | `StoryQualityLevel` — pins quality while this scene is active, overriding the viewer's choice. |
+All 18 fields are in [cyango-shared-types.md](../cyango-shared-types.md), `interface IScene`. The ones with behaviour behind them:
+
+| Field | What the type does not tell you |
+|-------|--------------------------------|
+| `shadowsEnabled` | Turns the canvas shadow map on for this scene. Required before any light's `castShadow` produces a visible shadow. |
+| `physics` | `enabled` gates entity `physics` the same way. |
+| `title` | What Studio shows when `name` is unset, and localized: `{ "en-US": "Lobby" }`. |
+| `thumbnailAsset` | `insert_assets` sets it automatically when a panorama lands in a panorama scene. |
+| `forcedQualityLevel` | Pins quality while the scene is active, overriding the viewer's own choice. See below. |
 
 ### `StoryQualityLevel`
 

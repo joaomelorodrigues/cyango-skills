@@ -17,26 +17,9 @@ Each object is one `IAction`. Combine `type` with the right companion fields (`t
 
 ## `IAction` fields
 
-| Field | Notes |
-|-------|-------|
-| `id` | Required. Unique string per action. |
-| `name` | Optional label. |
-| `type` | `ActionType` — required. |
-| `disabled` | Skip execution when true. |
-| `eventType` | `EventType` — when this action fires. |
-| `isToggle` | Toggles between original values and `entityProperties`. |
-| `targetSceneId` | For `GO_TO_SCENE`. |
-| `toExternalUrl` | For `OPEN_URL`. |
-| `lookAt` | Camera move / look-at (`CAMERA_LOOK_AT`). |
-| `duration` / `ease` | Delay, tween timing (ms + GSAP ease name). |
-| `sceneTransition` | `TransitionType` when changing scenes. |
-| `modal` | Open/close modal payloads. |
-| `customCode` | `{ code, errorMessages? }` — custom execution. |
-| `conditions` | `IActionConditions` — all must pass. |
-| `entityProperties` | Property paths → values. Used with `CHANGE_ENTITY_PROPERTY`. |
-| `targetEntitiesIds` | Entities affected (show/hide, media, trigger). |
-| `targetTags` | Same idea by tags instead of ids. |
-| `prefabId` | `INSTANTIATE_PREFAB` — prefab from story list. |
+All 26 fields are in [cyango-shared-types.md](../cyango-shared-types.md), `interface IAction`. `id` and `type` are the only required ones.
+
+Every other field is a **companion**, read only when `type` is the `ActionType` that calls for it. The `Needs` column in the tables below is that mapping, and it is the part the types cannot express: `IAction` declares every companion optional, so nothing in the shape tells you that `GO_TO_SCENE` without `targetSceneId` does nothing.
 
 ---
 
@@ -63,8 +46,16 @@ Each object is one `IAction`. Combine `type` with the right companion fields (`t
 
 | Type | Description | Needs |
 |------|-------------|--------|
-| `OPEN_MODAL` | Open a modal overlay. | `modal` |
-| `CLOSE_MODAL` | Close a modal. | `modal` |
+| `OPEN_MODAL` | Open a modal overlay. | `modal`, an `IModal` |
+| `CLOSE_MODAL` | Close a modal. | No payload |
+
+`modal` is an `IModal`. Full shape in [cyango-shared-types.md](../cyango-shared-types.md), `interface IModal`. The parts that catch people out:
+
+- **`modalType`** picks the body: `TEXT`, `IMAGE`, `VIDEO`, `EXTERNAL_VIDEO`, `GALLERY`, `AUDIO`, `MODEL3D`, `NONE`.
+- **`modalAssetDomElementId`** is a composite id, `modal_asset.id + entity.id`, not a bare asset id. Same rule as `assetDomElementId` in [common.md](../entities/common.md). `GALLERY` uses `modalGalleryAssetDomElementIds`, an ordered array of the same composite ids.
+- **`modalTitle`**, **`modalText`** and **`modalExternalVideoUrl`** are `LocalizationObject`, so `{ "en-US": "…" }`, not plain strings.
+- **`modalButtons`** is `IModalButton[]`, and each button carries its own `buttonActions: IAction[]`, so a modal button nests a full action array.
+- **`modalMaximized`** fills the available space instead of the capped desktop size.
 
 ### Media (entity clips)
 

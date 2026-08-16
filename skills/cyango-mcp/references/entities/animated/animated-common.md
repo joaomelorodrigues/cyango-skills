@@ -11,11 +11,7 @@ Two entity types play a frame sequence that is neither a video nor a skeletal 3D
 
 ## `LOTTIE`
 
-`IEntityLottie`:
-
-| Field | Role |
-|-------|------|
-| `resolution` | Texture edge in **pixels** (default `512`). The animation is redrawn and re-uploaded every frame, so this is the direct quality/cost dial. It is an absolute size, **not** a multiplier of the artboard. |
+`lottie?: IEntityLottie` carries one field, `resolution`, the texture edge in pixels (default `512`). See [cyango-shared-types.md](../../cyango-shared-types.md) for the shape.
 
 **It is a GUI-stack entity.** `LOTTIE` renders through `GUI2D_Lottie`, so it behaves like `GUI_IMAGE`:
 
@@ -30,13 +26,7 @@ Asset upload: a Lottie is a plain `.json`, so the editor decides the category by
 
 ## `SPRITE`
 
-`IEntitySpritesheet`:
-
-| Field | Role |
-|-------|------|
-| `cols` | Columns in the uniform grid. |
-| `rows` | Rows in the uniform grid. |
-| `fps` | Default fps for clips that do not set their own. |
+`spritesheet?: IEntitySpritesheet` describes the uniform grid (`cols`, `rows`, `fps`). See [cyango-shared-types.md](../../cyango-shared-types.md).
 
 Clips can select a frame range within the grid via the `SPRITE`-only fields on `IEntityAnimation`: `startFrame`, `endFrame`, `fps`. These are ignored for `CUSTOM_3D_MODEL` clips.
 

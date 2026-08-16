@@ -13,6 +13,8 @@ Utility tools: `bridge_status` (connection, queue depth, protocol version), `val
 
 Copy payload shapes from [payloads.md](references/payloads.md) rather than assembling them from field tables.
 
+**Every field shape is in [cyango-shared-types.md](references/cyango-shared-types.md)**, generated from the types the editor itself runs on. Grep it by name (`interface IModal`, `enum ActionType`); it is 2000+ lines, so never read it whole.
+
 ## Three words this skill runs on
 
 - **Wave**: every write of one kind for one change, sent in one call.
@@ -36,6 +38,7 @@ Copy payload shapes from [payloads.md](references/payloads.md) rather than assem
 13. **`LOTTIE` renders through the GUI stack**, so it takes slots like `GUI_IMAGE` despite having no `GUI_` prefix.
 14. **Custom code is the last resort.** Run the decision flow in [entity-choice.md](rules/entity-choice.md) first, then read [custom-code.md](references/custom-code.md) before you write any of the three surfaces.
 15. **Scene switches gate entity features**: entity `physics` needs scene `physics.enabled`, light `castShadow` needs scene `shadowsEnabled`.
+16. **Ground every field you write.** These pages cover behaviour, not every shape. When a field's shape is not spelled out here, get it in this order: grep [cyango-shared-types.md](references/cyango-shared-types.md) for the type name, then `get_entity` on something already using the feature, then `validate_patch` on the path. Ask the user when none of the three settles it.
 
 Types that no longer exist: `HOTSPOT*`, `EMBED_*` entities and `LIVESTREAM_*` scenes. Older stories may still contain them; never create new ones.
 

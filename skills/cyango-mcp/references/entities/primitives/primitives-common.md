@@ -13,27 +13,11 @@
 
 ---
 
-## `IEntityGeometry` (story schema)
+## Geometry and material fields
 
-| Field | Used for | Value |
-|-------|----------|--------|
-| `primitive` | **`GeometryPrimitive`** enum | string |
-| `radius`, `radiusBottom`, `radiusTop` | Radial dimensions | string |
-| `height`, `width` | Linear dimensions | number |
-| `segmentsWidth`, `segmentsHeight` | Tessellation | number |
-| `thetaLength`, `phiLength`, `thetaStart`, `phiStart` | Partial surfaces | number |
+`IEntityGeometry`, `IEntityMaterial` and the `GeometryPrimitive` enum are in [cyango-shared-types.md](../../cyango-shared-types.md). Two things to note when you read them: the radius fields (`radius`, `radiusBottom`, `radiusTop`) are typed **`string`**, not number, and `materialType` is required and must match `MaterialTypes`.
 
-## Transforms (`position` / `rotation` / `scale`)
-
-| Track | Value |
-|-------|--------|
-| `*.currentValue` | **`[number, number, number]`** — numeric components only |
-
----
-
-## `IEntityMaterial`
-
-**`materialType`** is required and must match `MaterialTypes`. Key fields: `color`, `metalness`, `roughness`, `transparent`, `castShadow`, `receiveShadow`, PBR maps, keyed video fields.
+`position` / `rotation` / `scale` each hold a plain `[number, number, number]` at `*.currentValue`.
 
 ---
 
