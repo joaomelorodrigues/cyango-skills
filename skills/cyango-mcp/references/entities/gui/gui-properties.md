@@ -120,10 +120,43 @@ Properties live inside `gui.currentValue.<breakpoint>.<state>` (e.g. `desktop.de
 | Field | Type | Notes |
 |-------|------|-------|
 | `visibility` | `"visible"` · `"hidden"` | |
-| `pointerEvents` | `"none"` · `"auto"` · `"listener"` | |
+| `pointerEvents` | `"none"` · `"auto"` · `"listener"` | Leave unset to get the automatic rule below. |
 | `pointerEventsType` | `"all"` · `{ allow: … }` · `{ deny: … }` | Filter by pointer type. |
 | `pointerEventsOrder` | number | |
 | `cursor` | string | CSS cursor keyword (e.g. `"pointer"`). |
+
+#### Who catches the click
+
+A GUI box is hit-tested across its **whole layout box, including where it is transparent**, so a
+full-screen wrapper laid over a scene takes every click that belongs to the 3D behind it. This is the
+single most common cause of "my hotspots stopped working after I added a HUD".
+
+Leave `pointerEvents` unset and the box resolves it automatically. It **catches** the click when it
+shows chrome or answers the pointer:
+
+- `backgroundOpacity > 0` (the background is visible)
+- a visible border: `borderOpacity > 0` and any border width above `0`
+- `overflow: "scroll"`
+- interactive: it has at least one enabled action, or any breakpoint defines a `hover` state
+
+Otherwise the box is a bare layout wrapper and the click **passes through** to whatever is behind.
+
+Set `pointerEvents` yourself to override that rule:
+
+| Value | Effect |
+|-------|--------|
+| unset | Automatic, per the rule above |
+| `"auto"` | Always catches the click |
+| `"none"` | Never catches the click. **Children keep their own**, because uikit hit-tests the root through a flat list of descendants, so `"none"` removes only that one box |
+| `"listener"` | A uikit value older data may hold. It catches the click, the same as `"auto"` |
+
+`"none"` on a wrapper is therefore the correct way to build a HUD that floats over a clickable
+scene: the panel passes clicks through while its buttons keep working.
+
+Every GUI type answers this except `GUI_SCREEN`, which is forced to `"none"` so the root can never
+swallow the scene. In the editor the control is **Pointer → Clicks**, with `Automatic`,
+`Blocks clicks` and `Click through`. It is a GUI property like any other, so it can be set per
+breakpoint and per hover state.
 
 ### Rendering
 
@@ -245,11 +278,11 @@ For layout issues after `add_entities` / `update_entities`, inspect parent chain
 | Background | `backgroundColor` + `backgroundOpacity` | Default base: black; default opacity: 1 |
 | Border | `borderColor` + `borderOpacity` | Default base: black; default opacity: 1 |
 | Scrollbar | `scrollbarColor` + `scrollbarOpacity` | Default base: gray; default opacity: 1 |
-| Pointer events | `backgroundOpacity` | Auto `"none"` when `backgroundOpacity === 0`, else `"listener"` — `pointerEvents` in GUI data cannot override this |
+| Pointer events | `pointerEvents`, or leave unset | Resolved automatically from chrome and interactivity. Setting `pointerEvents` overrides the rule — see [Who catches the click](#who-catches-the-click) |
 
 **Common mistakes:**
 - **Clipped children:** default `overflow: "scroll"` clips anything outside the 150×150 box. Fix: always set `overflow: "visible"` unless you explicitly want scrolling.
-- **Transparent container still blocks clicks:** if you set `backgroundColor` (any color) but leave `backgroundOpacity` unset, it defaults to `1` (fully opaque). The container is invisible to the eye but blocks pointer events. Fix: to make a container truly transparent and non-blocking, set `backgroundOpacity: 0` — this also triggers the `pointerEvents: "none"` automatic behavior.
+- **Transparent container still blocks clicks:** if you set `backgroundColor` (any color) but leave `backgroundOpacity` unset, it defaults to `1` (fully opaque). The container is invisible to the eye but still counts as chrome, so it catches the click. Fix: set `backgroundOpacity: 0`, which makes it truly transparent and lets the automatic rule pass the click through.
 
 ---
 

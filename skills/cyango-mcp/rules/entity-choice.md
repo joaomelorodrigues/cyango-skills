@@ -44,7 +44,7 @@ Need something in the story?
 | Runtime counter, global state, branching | `CUSTOM_CODE` action + `cyango.utils.setGlobalVar` | |
 | Spawn prefab from logic | `INSTANTIATE_PREFAB` action, or `CUSTOM_CODE` action if conditional | Whitelist prefab in `customCodePrefabIds` when code-only |
 | Build mesh in code, spin every frame, instancing | `GUI_CUSTOM_CODE` entity | Actions must not build into `group` |
-| Dynamic screen UI from markup string | `GUI_CUSTOM_CODE` entity under `GUI_SCREEN` + `uikitml()` | `uikitml()` throws in actions |
+| Dynamic screen UI from markup string | `GUI_CUSTOM_CODE` entity under `GUI_SCREEN` + `uikitml()` | `uikitml()` throws in actions; markup is a strict HTML subset with no `<text>` tag — read [custom-code.md](../references/custom-code.md#uikitml-markup) first |
 | Author-tunable knobs without opening code | `GUI_CUSTOM_CODE` entity `params` | Action params are MCP-only, not inspector-friendly |
 | Multi-entity property patch at runtime | `CUSTOM_CODE` action → `cyango.storyState.updateStoryData` | Or several `CHANGE_ENTITY_PROPERTY` if static |
 
@@ -75,6 +75,7 @@ Deep defaults: [non-gui-defaults.md](../references/entities/non-gui-defaults.md)
 | Meshes duplicated every click | `CUSTOM_CODE` action adding to `group` | Move build logic to `GUI_CUSTOM_CODE` entity |
 | Transform snaps back every frame | Entity code setting `group.position` / rotation / scale | Animate a child mesh; let inspector own transform |
 | Full UI built in action | Used `uikitml()` in action | `GUI_CUSTOM_CODE` entity under GUI parent |
+| `uikitml()` renders nothing, anywhere | Markup rejected as a whole: a `<text>` tag, two roots, a camelCase or CSS-only property, or a `padding: 12px 20px` shorthand | Read the thrown error in the console; see [uikitml markup](../references/custom-code.md#uikitml-markup) |
 | 50 GUI patches for one dynamic list | Patching entities from code repeatedly | `GUI_CUSTOM_CODE` entity or one container + show/hide |
 | Analytics in entity code | Head/Footer task | `settings.customHeadCode` / `customFooterCode` |
 | `add_entities` rejects `GUI_CUSTOM_CODE` | MCP server lacks the type enum | User adds via **Add Entities → Advanced → Custom Code**, then patch `customCode` with `update_entities` |

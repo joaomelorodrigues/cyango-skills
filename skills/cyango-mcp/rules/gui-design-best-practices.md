@@ -174,7 +174,7 @@ These are calibrated to 1:1 viewport pixels at 1080p. Adjust proportionally for 
 - World-space panels: set `backgroundColor` / `backgroundOpacity` on the wrapper so text is readable over the 3D scene; `borderRadius` for card-style panels.
 - **Hover**: give interactive containers a `desktop.hover` slot so they have feedback.
 - **Borders**: there is no `boxSizing` property, so borders always add to the element's dimensions. Give bordered containers explicit `width` / `minHeight` so the border doesn't shift the flex layout.
-- **`pointerEvents: "none"`**: set on decorative overlays or chrome containers that sit above interactive children, so clicks pass through to the actionable element underneath.
+- **`pointerEvents`**: leave it unset and a container decides for itself, catching the click only when it shows a background or border, scrolls, or is interactive. Set `"none"` when that rule guesses wrong, for example a decorative overlay that does have a background but must still let clicks reach what is underneath. `"none"` removes only that box, so its children stay clickable. See [Who catches the click](../references/entities/gui/gui-properties.md#who-catches-the-click).
 
 ---
 

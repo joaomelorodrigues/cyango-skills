@@ -308,6 +308,63 @@ available here. Three things are entity-only in practice:
 Under a GUI parent the entity's `group` is a uikit `Container` rather than a `Group`, so `uikitml()`
 output is laid out by the GUI while plain meshes are not laid out and belong in world space.
 
+### uikitml markup
+
+uikitml is a small subset of HTML, not HTML. It reports problems as diagnostics instead of throwing,
+so **one bad tag or one bad property skips the whole interface**. Nothing renders, in screen space or
+in world space. The player turns those diagnostics into a thrown error naming the entity, so read the
+browser console before changing anything else.
+
+**Tags.** Exactly these, and nothing else:
+
+`div`, `p`, `span`, `li`, `h1`–`h6`, `ol`, `ul`, `a`, `button`, `img`, `svg`, `video`, `input`, `textarea`
+
+There is **no `<text>` tag**. Text is written directly inside a container, and `span` is the usual
+carrier. `img`, `svg`, `video`, `input` and `textarea` take no children.
+
+**One root.** The markup must have exactly one top-level element. Two siblings fail with
+`multiple-roots`; wrap them in a `div`.
+
+**Properties are kebab-case uikit props, not CSS.** The name is the uikit property spelled with
+dashes, so `background-color`, `flex-direction`, `border-radius`, `font-size`. `backgroundColor` is
+rejected. Names that exist in CSS but not in uikit are rejected too, so there is no `box-shadow`, and
+`position` is `position-type` with `position-top` / `position-left` for the offsets.
+
+**No multi-value shorthands.** `padding: 12px 20px` and `margin: 4px 8px` are both invalid. Use one
+value (`padding: 12px`), the axis form (`padding-x`, `padding-y`), or the sides
+(`padding-top`, `padding-left`, ...).
+
+**`id` does not reach the object.** uikitml keeps `id` in the markup but never sets three's
+`Object3D.name`, so `getObjectByName()` will not find it, and no attribute sets that name. Reach a
+child by position instead, and remember pointer events bubble, so listening on the root also fires
+for everything inside it:
+
+```js
+const root = await uikitml(`
+  <div style="padding: 16px; background-color: #111827; border-radius: 12px">
+    <button style="padding-x: 20px; padding-y: 12px; background-color: #6366f1; border-radius: 8px">
+      <span style="color: white">Next scene</span>
+    </button>
+  </div>
+`);
+
+// Markup order is child order.
+root.children[0].addEventListener('click', () => cyango.storyState.setNextScene());
+```
+
+**Style inline, not with classes.** A `<style>` block parses and a `class` attribute is accepted, but
+`uikitml()` never applies them: uikit resolves classes against a global stylesheet that nothing
+populates, so the element renders unstyled and only a `class "x" not present in the global
+stylesheet` warning appears. Put every property in the element's own `style`.
+
+**Clicks pass through a bare panel.** Under a `GUI_SCREEN` the entity's own container follows the
+same rule as `GUI_CONTAINER`: it catches the pointer only when it shows chrome or is interactive,
+and otherwise lets the click reach the scene behind. Its background defaults to transparent, so a
+`GUI_CUSTOM_CODE` HUD does not block the 3D underneath by default, and the elements your markup
+builds keep their own pointer events either way. To force it, set `pointerEvents` on the entity's
+GUI data (`auto` to always catch, `none` to never), not in the markup. See
+[Who catches the click](entities/gui/gui-properties.md#who-catches-the-click).
+
 ## Story Head/Footer code
 
 Use Head/Footer code for story-wide script-style setup such as analytics or third-party bootstrapping.
