@@ -29,7 +29,7 @@ Actions are attached as `actions.currentValue` (`IAction[]`).
 
 Parenting is not universal. These types can hold children:
 
-`GROUP`, `GROUP_BOX`, `PRIMITIVE_*`, `GUI_CONTAINER`, `GUI_SCREEN`, `FLAT_IMAGE`, `FLAT_VIDEO`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CAMERA`, `PLAYER`, `WEBCAM`, `FACE_MESH`, `CUSTOM_CODE`.
+`GROUP`, `GROUP_BOX`, `PRIMITIVE_*`, `GUI_CONTAINER`, `GUI_SCREEN`, `FLAT_IMAGE`, `FLAT_VIDEO`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CAMERA`, `PLAYER`, `WEBCAM`, `FACE_MESH`, `GUI_CUSTOM_CODE`.
 
 Every other type — `SPLAT`, `CUSTOM_3D_MODEL`, all `*_LIGHT`, `PANORAMA*`, `AUDIO_*`, `HDR`, `SKYBOX`, `MAP_*`, `LOTTIE`, `SPRITE`, `SUBTITLE`, and the leaf `GUI_*` types — is a leaf. The rule lives in `PARENT_CAPABLE_ENTITY_TYPES` in `cyango-shared` and is enforced on every write path: the scene tree refuses the drop, paste and create skip the parent, and the MCP bridge places the entity at the scene root instead.
 

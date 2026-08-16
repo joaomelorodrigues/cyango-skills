@@ -17,7 +17,7 @@ Need something in the story?
 ├─ Visible content that persists in the scene?
 │  ├─ Matches a built-in entity type? → that entity (see table below)
 │  └─ Procedural mesh, per-frame animation, uikitml(), or tunable params in inspector?
-│     └─ CUSTOM_CODE entity — [custom-code.md](../references/custom-code.md#custom-code-entities)
+│     └─ GUI_CUSTOM_CODE entity — [custom-code.md](../references/custom-code.md#custom-code-entities)
 │
 └─ Layout / grouping only, no render?
    └─ GROUP (or NONE for invisible logic anchor)
@@ -43,9 +43,9 @@ Need something in the story?
 | Timed sequence of show/hide / media | Timeline + entity actions | Prefer timeline over frame loops |
 | Runtime counter, global state, branching | `CUSTOM_CODE` action + `cyango.utils.setGlobalVar` | — |
 | Spawn prefab from logic | `INSTANTIATE_PREFAB` action, or `CUSTOM_CODE` action if conditional | Whitelist prefab in `customCodePrefabIds` when code-only |
-| Build mesh in code, spin every frame, instancing | `CUSTOM_CODE` entity | Actions must not build into `group` |
-| Dynamic screen UI from markup string | `CUSTOM_CODE` entity under `GUI_SCREEN` + `uikitml()` | `uikitml()` throws in actions |
-| Author-tunable knobs without opening code | `CUSTOM_CODE` entity `params` | Action params are MCP-only, not inspector-friendly |
+| Build mesh in code, spin every frame, instancing | `GUI_CUSTOM_CODE` entity | Actions must not build into `group` |
+| Dynamic screen UI from markup string | `GUI_CUSTOM_CODE` entity under `GUI_SCREEN` + `uikitml()` | `uikitml()` throws in actions |
+| Author-tunable knobs without opening code | `GUI_CUSTOM_CODE` entity `params` | Action params are MCP-only, not inspector-friendly |
 | Multi-entity property patch at runtime | `CUSTOM_CODE` action → `cyango.storyState.updateStoryData` | Or several `CHANGE_ENTITY_PROPERTY` if static |
 
 ## Custom code: three surfaces
@@ -54,7 +54,7 @@ Need something in the story?
 |---------|------|----------|
 | Built-in **action** | Event-fired logic; no persistent mesh | Runs once per trigger |
 | **`CUSTOM_CODE` action** | Same, but needs JS / `cyango` APIs | Runs once; return value discarded; never use `group` or `uikitml()` |
-| **`CUSTOM_CODE` entity** | Scene object built from code; optional `update`/`dispose` | Mount → every frame → dispose |
+| **`GUI_CUSTOM_CODE` entity** | Scene object built from code; optional `update`/`dispose` | Mount → every frame → dispose |
 | **Head/Footer** | External scripts, no `cyango` | Story load |
 
 Full API, sandbox, and MCP limits: [custom-code.md](../references/custom-code.md).
@@ -81,13 +81,13 @@ Deep defaults: [non-gui-defaults.md](../references/entities/non-gui-defaults.md)
 
 | Symptom | Likely mistake | Fix |
 |---------|----------------|-----|
-| Meshes duplicated every click | `CUSTOM_CODE` action adding to `group` | Move build logic to `CUSTOM_CODE` entity |
+| Meshes duplicated every click | `CUSTOM_CODE` action adding to `group` | Move build logic to `GUI_CUSTOM_CODE` entity |
 | Transform snaps back every frame | Entity code setting `group.position` / rotation / scale | Animate a child mesh; let inspector own transform |
-| Full UI built in action | Used `uikitml()` in action | `CUSTOM_CODE` entity under GUI parent |
-| 50 GUI patches for one dynamic list | Patching entities from code repeatedly | `CUSTOM_CODE` entity or one container + show/hide |
+| Full UI built in action | Used `uikitml()` in action | `GUI_CUSTOM_CODE` entity under GUI parent |
+| 50 GUI patches for one dynamic list | Patching entities from code repeatedly | `GUI_CUSTOM_CODE` entity or one container + show/hide |
 | Analytics in entity code | Head/Footer task | `settings.customHeadCode` / `customFooterCode` |
-| `add_entities` rejects `CUSTOM_CODE` | MCP server lacks type enum | User adds via **Add Entities → Advanced → Custom Code**; patch `customCode` with `update_entities` |
+| `add_entities` rejects `GUI_CUSTOM_CODE` | MCP server lacks type enum | User adds via **Add Entities → Advanced → Custom Code**; patch `customCode` with `update_entities` |
 
 ## MCP note
 
-Creating `CUSTOM_CODE` entities through `add_entities` may be blocked until the MCP server ships `EntityTypes.CUSTOM_CODE`. Patching `customCode` on an existing entity always works. Prefer built-in types when MCP can create them in one batch.
+Creating `GUI_CUSTOM_CODE` entities through `add_entities` may be blocked until the MCP server ships `EntityTypes.GUI_CUSTOM_CODE`. Patching `customCode` on an existing entity always works. Prefer built-in types when MCP can create them in one batch.

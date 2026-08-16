@@ -21,14 +21,14 @@ Copy payload shapes from [payloads.md](references/payloads.md) rather than assem
 4. **Read [non-gui-defaults.md](references/entities/non-gui-defaults.md) for every non-GUI type** in the change set before assuming what a created entity contains.
 5. **Roots are world space, children are local to the parent** — [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md).
 6. **Reparent by patching `parentEntityId`** (`""` for scene root). Never patch `children`.
-7. **Only some types accept children.** `GROUP`, `GROUP_BOX`, `PRIMITIVE_*`, `GUI_CONTAINER`, `GUI_SCREEN`, `FLAT_IMAGE`, `FLAT_VIDEO`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CAMERA`, `PLAYER`, `WEBCAM`, `FACE_MESH`, `CUSTOM_CODE` — and nothing else. `SPLAT` never takes children; pair it with companions as siblings in a `GROUP`. Parenting to a leaf lands the entity at the scene root — [common.md](references/entities/common.md#which-types-accept-children).
+7. **Only some types accept children.** `GROUP`, `GROUP_BOX`, `PRIMITIVE_*`, `GUI_CONTAINER`, `GUI_SCREEN`, `FLAT_IMAGE`, `FLAT_VIDEO`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CAMERA`, `PLAYER`, `WEBCAM`, `FACE_MESH`, `GUI_CUSTOM_CODE` — and nothing else. `SPLAT` never takes children; pair it with companions as siblings in a `GROUP`. Parenting to a leaf lands the entity at the scene root — [common.md](references/entities/common.md#which-types-accept-children).
 8. **Size primitives with `scale`.** `geometry` fields are export metadata and do not resize the viewport mesh.
 9. **Size world-space GUI with GUI `width` / `height`**, keeping `scale` at `[1, 1, 1]`. Never micro-scale a transform to fake pixel units.
 10. **Omit `scale` for unknown GLBs** in `insert_assets`; passing `[1,1,1]` suppresses the editor's own normalisation.
 11. **Icons are `GUI_ICON`** with a Lucide `iconSrc` (`"X"`, `"ChevronLeft"`, `"Play"`), sized by `iconSize`. Never a glyph character in a `GUI_TEXT`.
 12. **Let the editor infer entity type from an asset.** Pass `forceEntityType` only for the cases listed in [assets-common.md](references/assets/assets-common.md#image-and-video-entity-types--trust-the-editor-flat_-scope). `FLAT_IMAGE` / `FLAT_VIDEO` belong inside flat scenes only — for a poster or billboard in a 3D tour use `GUI_IMAGE`, a textured `PRIMITIVE_*`, or a model.
 13. **`LOTTIE` renders through the GUI stack**, so it is sized and placed like `GUI_IMAGE` (via `gui.currentValue`) even though it has no `GUI_` prefix.
-14. **`CUSTOM_CODE` is an entity built from code**, with its block at `customCode` (not in `actions`). Creating one through MCP is blocked until the server ships a cyango-shared containing `EntityTypes.CUSTOM_CODE`; patching an existing one works. Actions and entity blocks share one scope, so read [custom-code.md](references/custom-code.md) before writing either: the difference is lifetime, and an action that builds into `group` leaks. Write `code` only; `compiledCode` is produced by the editor on save. **Before adding custom code**, run the decision flow in [entity-choice.md](rules/entity-choice.md) — prefer built-in entities and actions when they fit.
+14. **`CUSTOM_CODE` is an entity built from code**, with its block at `customCode` (not in `actions`). Creating one through MCP is blocked until the server ships a cyango-shared containing `EntityTypes.GUI_CUSTOM_CODE`; patching an existing one works. Actions and entity blocks share one scope, so read [custom-code.md](references/custom-code.md) before writing either: the difference is lifetime, and an action that builds into `group` leaks. Write `code` only; `compiledCode` is produced by the editor on save. **Before adding custom code**, run the decision flow in [entity-choice.md](rules/entity-choice.md) — prefer built-in entities and actions when they fit.
 15. **Scene switches gate entity features**: entity `physics` needs scene `physics.enabled`, light `castShadow` needs scene `shadowsEnabled`.
 16. **Reuse matching scenes and entities** instead of creating near-duplicates.
 
@@ -79,7 +79,7 @@ Paths are relative to this skill folder (`cyango-mcp/`).
 | [hierarchy-and-coordinates.md](rules/hierarchy-and-coordinates.md) | World vs local transforms, `parentIndex`, composing entity trees. |
 | [gui-desktop-first.md](rules/gui-desktop-first.md) | Breakpoint cascade, `gui.currentValue` path format, when to touch tablet/mobile. |
 | [gui-design-best-practices.md](rules/gui-design-best-practices.md) | Recipes, icons, sizing for 1920 × 1080, screen vs world GUI, parent-chain troubleshooting. |
-| [entity-choice.md](rules/entity-choice.md) | Decision flow: built-in entity vs action vs `CUSTOM_CODE` entity/action vs Head/Footer; challenge → first choice table. |
+| [entity-choice.md](rules/entity-choice.md) | Decision flow: built-in entity vs action vs `GUI_CUSTOM_CODE` entity/action vs Head/Footer; challenge → first choice table. |
 
 ### References (what the data is)
 
@@ -99,4 +99,4 @@ Paths are relative to this skill folder (`cyango-mcp/`).
 | [actions/actions.md](references/actions/actions.md) | `IAction`, `ActionType`, `EventType`, conditions, patch shape. |
 | [timeline/timeline.md](references/timeline/timeline.md) | `ITimeline`, `IAnimation`, keyframes, `IMediaClip`, animation clips. |
 | [assets/assets-common.md](references/assets/assets-common.md) | Asset tools, upload rules, asset → entity mapping, splat formats. |
-| [custom-code.md](references/custom-code.md) | The three custom-code surfaces: `CUSTOM_CODE` actions, `CUSTOM_CODE` entities, story Head/Footer code. Shared params model, runtime scopes, limitations. |
+| [custom-code.md](references/custom-code.md) | The three custom-code surfaces: `CUSTOM_CODE` actions, `GUI_CUSTOM_CODE` entities, story Head/Footer code. Shared params model, runtime scopes, limitations. |

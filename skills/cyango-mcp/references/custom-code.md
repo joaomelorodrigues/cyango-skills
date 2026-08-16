@@ -9,7 +9,7 @@ differs is the host: when the block runs and what it receives.
 | Surface | Stored at | Runs | Runtime scope | MCP status |
 |---------|-----------|------|---------------|------------|
 | `CUSTOM_CODE` action | Entity `actions.currentValue` or scene `sceneActions` | Once, when its event fires | The shared scope | Writable through current MCP tools |
-| `CUSTOM_CODE` entity | Entity `customCode` | On mount, then every frame, then disposed | The shared scope | Blocked until the MCP server ships a cyango-shared with `EntityTypes.CUSTOM_CODE` |
+| `GUI_CUSTOM_CODE` entity | Entity `customCode` | On mount, then every frame, then disposed | The shared scope | Blocked until the MCP server ships a cyango-shared with `EntityTypes.GUI_CUSTOM_CODE` |
 | Story Head/Footer code | `settings.customHeadCode` / `settings.customFooterCode` | On story load | `console` and timers only, no `cyango` | Inspectable with `get_story_state`; current MCP has no story-settings write tool |
 
 `compiledCode` is written by the editor when the story is saved, and the player runs it in
@@ -117,7 +117,7 @@ Every block gets the same names, whichever host runs it. What differs is lifetim
 | `cyango` | The platform API, below | Always present |
 | `console`, timers | Namespaced logging, tracked timers | Delays are capped at 60000 ms |
 
-Only a `CUSTOM_CODE` entity can usefully `return { update, dispose }`. An action's return value is
+Only a `GUI_CUSTOM_CODE` entity can usefully `return { update, dispose }`. An action's return value is
 discarded, and nothing disposes what an action leaves in `group`, so **an action must not build into
 `group`**. Building geometry belongs in an entity.
 
@@ -213,7 +213,7 @@ If code calls `instantiatePrefab()`, make sure the prefab is bundled in the stor
 `params` is a list on the block. Each entry carries its own value **and** its own inspector control,
 so a story can tune a block without opening the code.
 
-**Authored on entities.** The `CUSTOM_CODE` entity inspector shows a control per param, and its
+**Authored on entities.** The `GUI_CUSTOM_CODE` entity inspector shows a control per param, and its
 editor has a Params block for defining them. The action editor has neither, because an action is
 listed in the inspector rather than expanded, so its params would have nowhere to be tuned from.
 
@@ -222,7 +222,7 @@ reachable only by writing them yourself, which an MCP patch can do: set `customC
 action and the code reads them as `params.<key>`. Useful when the same action is duplicated across
 entities and only a value differs. Do not expect the user to find or edit them in the editor.
 
-On a `CUSTOM_CODE` entity:
+On a `GUI_CUSTOM_CODE` entity:
 
 ```json
 {
@@ -250,7 +250,7 @@ Changing any param re-runs the entity block that reads it.
 
 ## Custom Code entities
 
-A `CUSTOM_CODE` entity is an entity built from code rather than the inspector. It keeps the
+A `GUI_CUSTOM_CODE` entity is an entity built from code rather than the inspector. It keeps the
 transform, visibility, timeline, parenting and prefab behaviour of any other entity; only its
 content comes from the block.
 
@@ -258,7 +258,7 @@ Its code is at `customCode` on the entity, not inside `actions`.
 
 ```json
 {
-  "entityType": "CUSTOM_CODE",
+  "entityType": "GUI_CUSTOM_CODE",
   "name": "Instanced field",
   "customCode": {
     "code": "const mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());\ngroup.add(mesh);\nreturn { update: (delta) => { mesh.rotation.y += delta; } };",
@@ -307,14 +307,6 @@ available here. Three things are entity-only in practice:
 
 Under a GUI parent the entity's `group` is a uikit `Container` rather than a `Group`, so `uikitml()`
 output is laid out by the GUI while plain meshes are not laid out and belong in world space.
-
-### MCP status
-
-`add_entities` validates `entityType` against `EntityTypes` from the cyango-shared the MCP server
-was built with. Until that dependency includes `EntityTypes.CUSTOM_CODE`, creating one through MCP
-is rejected. Until then: describe the change and let the user add the entity from
-**Add Entities → Advanced → Custom Code**. Patching `customCode` on an entity that already exists
-works through `update_entities`.
 
 ## Story Head/Footer code
 
