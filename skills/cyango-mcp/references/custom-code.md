@@ -121,15 +121,85 @@ Only a `GUI_CUSTOM_CODE` entity can usefully `return { update, dispose }`. An ac
 discarded, and nothing disposes what an action leaves in `group`, so **an action must not build into
 `group`**. Building geometry belongs in an entity.
 
-The `cyango` namespace holds:
+The `cyango` namespace holds exactly five members: `storyState`, `uiState`, `timelineState`, `types`
+and `utils`. The lists below are complete. A name that is not listed does not exist, so never probe
+for one at runtime (`typeof cyango.uiState.someGuess === 'function'`) and never write a fallback
+chain of guessed names. If the API you need is absent, say so instead of guessing.
 
-- `cyango.storyState`: `activeStoryJson`, `activeSceneId`, `activeLanguage`, `setActiveScene`, `triggerAction`, `updateStoryData`, `instantiatePrefab`, XR helpers, asset helpers.
-- `cyango.uiState`: loading/camera/breakpoint state, `openUrl`, system modal helpers.
-- `cyango.timelineState`: timeline mode, elapsed time, mute state, media controls.
-- `cyango.types`: enums such as `ActionType`, `EventType`, `EntityTypes`, `SceneTypes`, `PlayingModes`.
-- `cyango.utils`: `getEntityById`, `getEntityByName`, `getActiveScene`, `thisEntity`, `globalVars`, `setGlobalVar`, `getGlobalVar`, `getAssetUrl`, GUI scroll helpers, `instantiatePrefab`, `detectDeviceType`, `detectBrowser`, `getWindowLocation`, `getNavigator`.
-  `getAssetUrl(assetId?)` resolves a story asset to a URL, quality level included; with no argument
-  it returns the asset assigned to `thisEntity`.
+#### `cyango.storyState`
+
+Reads `activeStoryJson`, `activeSceneId`, `activeLanguage`, `availableLanguages`, `assetRegistry`,
+`currentSceneAssetIds`, `allSceneAssetsReady`, `XRStore`, `storyQualityLevel`, `isWebcamReady`,
+`faceMeshScale`, `webcamZPosition`, `isVR`, `isAR`, `isMobileAR`, `arOriginState`, `storyProperties`,
+`storyPasswordError`, `linkLookAtAngles`, `teleportTargetPosition`, `triggerEntities`, `cameraAction`.
+
+Writes with `setActiveLanguage`, `setActiveScene`, `setNextScene`, `setPreviousScene`,
+`setTeleportTargetPosition`, `setTriggerEntities`, `setCameraAction`, `shareStory`, `likeStory`,
+`setStoryQualityLevel`, `triggerAction`, `setisWebcamReady`, `setFaceMeshScale`, `enterAR`,
+`enterVR`, `exitXR`, `setIsAROriginSet`, `setIsAR`, `setIsVR`, `setIsMobileAR`, `updateStoryData`,
+`addNewAssetsToActiveStory`, `addAssetsToSceneManifest`, `setActiveSceneAssets`, `recenterMap`,
+`instantiatePrefab`.
+
+#### `cyango.uiState`
+
+Reads `isAppLoading`, `userHasInteracted`, `cameraControlsEnabled`, `selectedBreakpoint`,
+`isSceneControlsMoving`, `currentSystemModalType`, `externalUrl`, `modal`, `showSubtitles`. These are
+getters only. `currentSystemModalType` has no setter.
+
+Writes with `toggleSubtitles`, `setIsAppLoading`, `setCameraControlsEnabled`, `openUrl`,
+`setSelectedBreakpoint`, `setIsSceneControlsMoving`, `openSystemModal`, `closeSystemModal`.
+
+`openSystemModal(type, options?)` is the only way to open a system modal. `type` is a
+`cyango.types.SystemModalType` value. `options` accepts `{ modal, externalUrl, mobileARLaunchUrl }`,
+and only the `ENTITY`, `EXTERNAL_URL` and `MOBILE_AR` types read it. The call is synchronous, so do
+not `await` it. `closeSystemModal()` closes whichever modal is open.
+
+| `SystemModalType` value | Opens |
+|---|---|
+| `NONE` | Nothing; the closed state |
+| `SHARE` | Share panel |
+| `QUALITY` | Story quality picker |
+| `LANGUAGE` | Language picker |
+| `ENTITY` | Entity modal; pass the content as `options.modal` |
+| `ASSETS_CONVERTING` | Assets still converting notice |
+| `EXTERNAL_URL` | Leave-the-story confirm; pass `options.externalUrl` |
+| `USER_INTERACT` | Tap-to-start gate |
+| `CACHE_CONTENTS` | Offline download panel; the user starts the download there |
+| `ECOMMERCE` | Ecommerce panel |
+| `QR_CODE` | QR code to open the story on a headset |
+| `XR_CHOICE` | VR or AR choice |
+| `MOBILE_AR` | Mobile AR launch; pass `options.mobileARLaunchUrl` |
+
+Offline download is `CACHE_CONTENTS`, and this one line is the whole implementation:
+
+```js
+cyango.uiState.openSystemModal(cyango.types.SystemModalType.CACHE_CONTENTS);
+```
+
+#### `cyango.timelineState`
+
+Reads `playingMode`, `isTimelineMuted`, `elapsedTime`, `timelineInstance`. Writes with
+`setPlayingMode`, `setElapsedTime`, `setTimelineMuteState`, `controlMedia`, `addAnimationToTimeline`,
+`removeAnimationFromTimeline`.
+
+#### `cyango.types`
+
+`ActionType`, `EventType`, `PlayingModes`, `TransitionType`, `EntityTypes`, `MaterialTypes`,
+`BreakpointStateTypes`, `SceneTypes`, `StoryQualityLevel`, `AssetCategories`, `AssetFileTypes`,
+`AssetMimeTypes`, `SystemModalType`, `LanguageTypes`.
+
+#### `cyango.utils`
+
+`getEntityById`, `getEntityByName`, `getActiveScene`, `thisEntity`, `globalVars`, `setGlobalVar`,
+`getGlobalVar`, `clearGlobalVars`, `deleteGlobalVar`, `getAssetUrl`, `instantiatePrefab`,
+`processPasteEntities`, `convertLatLngToSpherical`, `detectDeviceType`, `detectBrowser`,
+`getWindowLocation`, `getNavigator`, `getGuiInputValue`, and the GUI scroll helpers
+(`getGuiScrollPosition`, `getGuiMaxScrollPosition`, `setGuiScrollPosition`,
+`restoreGuiScrollPosition`, `restoreGuiScrollPositionAfterGrowth`, `scrollGuiBy`, `trackGuiScroll`,
+`untrackGuiScroll`, `lockGuiScroll`, `unlockGuiScroll`, `isGuiScrollLocked`).
+
+`getAssetUrl(assetId?)` resolves a story asset to a URL, quality level included; with no argument
+it returns the asset assigned to `thisEntity`.
 
 ### Sandbox globals and blocked browser APIs
 
@@ -178,6 +248,12 @@ Change scene:
 
 ```js
 cyango.storyState.setActiveScene('target-scene-id');
+```
+
+Open the offline download panel:
+
+```js
+cyango.uiState.openSystemModal(cyango.types.SystemModalType.CACHE_CONTENTS);
 ```
 
 Patch story data at runtime:
