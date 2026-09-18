@@ -14,7 +14,6 @@ This is a filtered projection, not the whole package: backend, billing, workspac
 export enum AssetProviderName {
   PEXELS = 'pexels',
   POLYHAVEN = 'polyhaven',
-  POLYPIZZA = 'polypizza',
   POLYFORK = 'polyfork',
   PIXABAY = 'pixabay',
   LOTTIEFILES = 'lottiefiles',
