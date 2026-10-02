@@ -40,7 +40,7 @@ Copy payload shapes from [payloads.md](references/payloads.md) rather than assem
 15. **Scene switches gate entity features**: entity `physics` needs scene `physics.enabled`, light `castShadow` needs scene `shadowsEnabled`.
 16. **Ground every field you write.** These pages cover behaviour, not every shape. When a field's shape is not spelled out here, get it in this order: grep [cyango-shared-types.md](references/cyango-shared-types.md) for the type name, then `get_entity` on something already using the feature, then `validate_patch` on the path. Ask the user when none of the three settles it.
 
-Types that no longer exist: `HOTSPOT*`, `EMBED_*` entities and `LIVESTREAM_*` scenes. Older stories may still contain them; never create new ones.
+Types that no longer exist: `EMBED_*` entities and `LIVESTREAM_*` scenes. Older stories may still contain them; never create new ones.
 
 ### Entity roles
 

@@ -22,7 +22,7 @@ MCP deep-merges these defaults when `add_entities` creates an entity. Keys you s
 
 Applied to: `PRIMITIVE_*`, `FLAT_IMAGE`, `FLAT_VIDEO`, `PANORAMA*`, `SPRITE`, `TEXT_3D`, `TEXT_3D_VIDEO`, `CUSTOM_3D_MODEL`, `SPLAT`.
 
-> `HOTSPOT*` and `EMBED_*` entity types no longer exist. Existing stories may still carry them; never create new ones.
+> `EMBED_*` entity types no longer exist. Existing stories may still carry them; never create new ones.
 
 ### `geometry.currentValue` base
 
