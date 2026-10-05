@@ -195,6 +195,7 @@ Used with `GO_TO_SCENE` as `sceneTransition` (see `TransitionType` in `cyango-sh
 | `ZOOM_IN_FADE_ZOOM_OUT` | Zoom + fade with the opposite in/out choreography to `ZOOM_OUT_FADE_ZOOM_IN` (pick using editor preview). |
 | `ZOOM_IN_FADE` | Zoom-in with fade into the next scene. |
 | `ZOOM_OUT_FADE` | Zoom-out with fade away from the current scene. |
+| `WALK` | Turns to the clicked hotspot, moves toward it, and crossfades into the next scene with no black frame. Best for 360 tours; falls back to `FADE` in XR. |
 
 ---
 

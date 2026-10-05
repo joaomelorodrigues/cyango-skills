@@ -2003,6 +2003,7 @@ export enum TransitionType {
   ZOOM_IN_FADE_ZOOM_OUT = 'ZOOM_IN_FADE_ZOOM_OUT',
   ZOOM_IN_FADE = 'ZOOM_IN_FADE',
   ZOOM_OUT_FADE = 'ZOOM_OUT_FADE',
+  WALK = 'WALK',
 }
 
 /**
