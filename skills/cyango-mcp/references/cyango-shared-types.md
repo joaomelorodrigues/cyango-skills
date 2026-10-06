@@ -11,17 +11,6 @@ This is a filtered projection, not the whole package: backend, billing, workspac
 ## assetProviders/index.ts
 
 ```ts
-export enum AssetProviderName {
-  PEXELS = 'pexels',
-  POLYHAVEN = 'polyhaven',
-  POLYFORK = 'polyfork',
-  PIXABAY = 'pixabay',
-  LOTTIEFILES = 'lottiefiles',
-  SKETCHFAB = 'sketchfab',
-}
-
-export type AssetImportMode = 'hotlink' | 'copy';
-
 /**
  * Normalized provider search item produced by a backend adapter's `search()`. Converted server-side
  * into an inline insertable `IAsset` before it reaches the editor (see IProviderAssetsResult), so
@@ -101,45 +90,26 @@ export interface IProviderAssetsResult {
 }
 ```
 
-## assets/convertTypes.ts
+## assetProviders/names.ts
 
 ```ts
-export interface InputFileInfo {
-  width?: number;
-  height?: number;
-  videoBitrate?: number; // in bps
-  videoDuration?: number; // in seconds
-  audioBitrate?: number; // in bps
-  audioDuration?: number; // in seconds
-  audioChannels?: number;
-  frameRate?: number;
-  roundedFrameRate?: number;
-}
+/**
+ * Provider ids stored on Cyango assets and search results. Same wire strings as the worker
+ * import task; this package does not import the worker SDK.
+ */
+export const ASSET_PROVIDER_NAME = {
+  PEXELS: 'pexels',
+  POLYHAVEN: 'polyhaven',
+  POLYFORK: 'polyfork',
+  PIXABAY: 'pixabay',
+  LOTTIEFILES: 'lottiefiles',
+  SKETCHFAB: 'sketchfab',
+} as const;
 
-export interface Resolutions {
-  width?: number; // in pixels
-  height?: number; // in pixels
-  videoBitrate?: number; // in bps
-  audioBitrate?: number; // in bps
-  level?: number;
-  maxBitrate?: number; // in bps
-  bufferSize?: number; // in bps
-  preset?: string;
-  profile?: string;
-  frameRate?: number; // in fps
-  roundedFrameRate?: number; // in fps
-  lodRatio?: number;
-}
+export type AssetProviderName = (typeof ASSET_PROVIDER_NAME)[keyof typeof ASSET_PROVIDER_NAME];
 
-export interface BuffersData {
-  buffer: Buffer;
-  name: string;
-}
-
-export interface FilesData {
-  filePath: string;
-  name: string;
-}
+/** `hotlink` keeps the remote url. `copy` downloads the file into the bucket. */
+export type AssetImportMode = 'hotlink' | 'copy';
 ```
 
 ## assets/index.ts
@@ -176,7 +146,11 @@ export interface IAsset {
   order?: number;
   name: string;
   thumbnailUrl?: string;
+  /** Who last set `thumbnailUrl`. Missing/'generated' may be replaced by a re-render; 'author' never is. */
+  thumbnailSetBy?: 'author' | 'generated';
   uploadUrl?: string; // the original file upload url
+  /** How to send the file. Transient, only in the presign response. */
+  upload?: IUploadPlan;
   createdAt?: Date;
   updatedAt?: Date;
   source: IAssetSource[]; // to use when there are multiple kinds of media sources for example video mp4 or video hls, fbx, obj and more
@@ -203,8 +177,7 @@ export interface IAsset {
    * user-owned asset with no marker) and never present on assets loaded from the database.
    */
   providerImport?: {
-    /** Provider name (e.g. `polyhaven`) — matches the backend {@link AssetProviderName} value. */
-    provider: string;
+    provider: AssetProviderName;
     /** Provider-native asset id / slug used to resolve and download the model at import time. */
     slug: string;
     /**
@@ -317,6 +290,8 @@ export interface ICustomFile {
   mediaHeight?: number;
 }
 
+export type INewAssetResult = IAsset & { afterUploadJobId?: string };
+
 /**
  * All mime types from the file extension.
  */
@@ -401,6 +376,8 @@ export enum AssetMimeTypes {
   ksplat = 'application/vnd.ksplat',
   sog = 'application/vnd.sog',
   rad = 'application/vnd.rad',
+  lcc = 'application/json',
+  lcc2 = 'application/json',
 }
 
 /**
@@ -498,56 +475,9 @@ export enum AssetFileTypes {
   ksplat = 'ksplat',
   sog = 'sog',
   rad = 'rad',
-}
-```
-
-## assets/splatCollisionMesh.ts
-
-```ts
-/**
- * Scene-type presets exposed in the manual collision mesh dialog. They map to
- * the splat-transform recommended pipeline:
- *  - OBJECT: no fill, no carve
- *  - INTERIOR: --voxel-external-fill + --voxel-carve
- *  - EXTERIOR: --voxel-floor-fill
- */
-export enum SplatCollisionScenePreset {
-  OBJECT = 'object',
-  INTERIOR = 'interior',
-  EXTERIOR = 'exterior',
-}
-
-export type SplatCollisionMeshShape = 'smooth' | 'faces';
-
-/**
- * Options forwarded to the manual splat collision mesh worker. Mirrors the
- * splat-transform CLI flags described in the README and COLLISION guide.
- */
-export interface ISplatCollisionMeshOptions {
-  /** Output collision GLB asset id (pre-created in PROCESSING status). */
-  outputAssetId: string;
-  /** Source asset id (the splat to derive a collision mesh for). */
-  sourceAssetId: string;
-
-  outputOriginPath: string;
-  /** Scene preset; chooses fill/carve flags. */
-  scenePreset: SplatCollisionScenePreset;
-  /** --seed-pos x,y,z (default 0,0,0). */
-  seedPos: [number, number, number];
-  /** --voxel-params size,opacity (default 0.05,0.1). */
-  voxelParams?: string;
-  /** Mesh shape for -K (smooth|faces). */
-  meshShape: SplatCollisionMeshShape;
-  /** --filter-cluster toggle (recommended on; isolates central scene). */
-  filterCluster: boolean;
-  /** Force --voxel-carve on exterior preset. Default false there. */
-  carve?: boolean;
-  /** Optional external fill dilation size (overrides preset default). */
-  externalFillSize?: number;
-  /** Optional floor fill dilation size (overrides preset default). */
-  floorFillSize?: number;
-  /** Optional carve capsule "h,r" override. */
-  carveParams?: string;
+  /** XGRIDS manifest. The data files sit next to it and only the XGRIDS SDK reads them. */
+  lcc = 'lcc',
+  lcc2 = 'lcc2',
 }
 ```
 
@@ -612,8 +542,12 @@ export enum ProductTypes {
   XR_LINKS = 'xr-links',
   XR_CONVERTER = 'xr-converter',
   XR_PANOEDIT = 'xr-panoedit',
+  XR_PANOCONNECT = 'xr-panoconnect',
   /** The macOS Quick Look extension's renderer. Bundled into Cyango.app, never served from a host. */
   XR_QUICKLOOK = 'xr-quicklook',
+  /** The worker's headless-browser thumbnail canvas route. Unlike xr-quicklook, this one has real
+   * CDN/network access — it renders arbitrary Story content, not one sandboxed local file. */
+  XR_THUMBNAIL_CANVAS = 'xr-thumbnail-canvas',
   WEBSITE = 'website',
   STORY = 'story',
 }
@@ -684,6 +618,10 @@ export interface IStory {
    */
   views?: number;
   /**
+   * View-count levels already emailed to the creator. Each level is sent once.
+   */
+  viewMilestonesNotified?: number[];
+  /**
    * The number of times the story was shared by clicking on the share button
    */
   shares?: number; // this is a metric to define the number of times the story was shared by clicking on the share button.
@@ -733,6 +671,8 @@ export interface IStory {
   firstPublishedAt?: Date;
   hasChanges?: boolean; // if the story has changes that are not published
   previewThumbAsset?: IAsset | null;
+  /** Who last set `previewThumbAsset`. Missing/'generated' is refreshed on publish; 'author' never is. */
+  previewThumbSetBy?: 'author' | 'generated';
   /**
    * The story's general brand image — shown on the loading screen and used as the
    * browser tab icon / PWA icon when no dedicated `faviconAsset` is set.
@@ -1078,6 +1018,7 @@ export interface IEntity {
   tags?: ITag[]; // the tags of the entity
   teleport?: IEntityTeleport; // the teleport properties of the entity
   prefab?: IEntityPrefabLink; // prefab metadata for instance sync/overrides
+  tourLink?: IEntityTourLink; // set on hotspots made by xr/panoconnect
   xrStore?: IEntityXRStore; // the xr store properties of the entity
   player?: IAnimation<IEntityPlayer>;
   spritesheet?: IEntitySpritesheet; // grid config for SPRITE entities (cols/rows/fps/alphaTest)
@@ -1111,6 +1052,11 @@ export interface IEntity {
    * - Story GUI 3D wrapper `pixelSize` normalization
    */
   resizeToUnitBox?: boolean;
+  /**
+   * Studio's ground-to-floor pass skips an entity once this is set. Builders set it when the
+   * placement is already final, such as a dollhouse shell that sits at its true floor height.
+   */
+  isGrounded?: boolean;
 
   // customProperties?: Record<string, unknown>; // custom properties of the entity to be used in entity components
 }
@@ -1564,6 +1510,9 @@ export enum SplatSourceTypes {
   SPZ = 'spz',
   SOG = 'sog',
   PLY = 'ply',
+  /** Native XGRIDS scan, rendered with the XGRIDS SDK instead of Spark. */
+  LCC = 'lcc',
+  LCC2 = 'lcc2',
 }
 
 export enum SplatEffectTypes {
@@ -1721,6 +1670,7 @@ export interface IScene {
   toneMapping?: ToneMapping; // the tone mapping mode for the scene
   shadowsEnabled?: boolean; // whether the canvas shadow map is enabled for this scene
   forcedQualityLevel?: StoryQualityLevel; // forces the story quality level while this scene is active, overriding the user's quality selection
+  tourNode?: IPanoTourNode; // where the pano was taken, set by xr/panoconnect
 }
 
 export enum StoryQualityLevel {
@@ -1816,6 +1766,100 @@ export type CameraTransform = {
   quartenion?: Vector4;
   orbitControlsTarget?: Vector3;
 };
+```
+
+## story/scenes/panoTour.ts
+
+```ts
+/** Where a pano was taken, in the tour frame: metres, Y up. Set by xr/panoconnect. */
+export interface IPanoTourNode {
+  position: [number, number, number];
+  /** Tour bearing of the image centre column (u = 0.5). Yaw 0 looks down -Z, clockwise toward +X. */
+  yawDeg: number;
+  groupId?: string;
+  floor?: number;
+  cameraHeightM?: number;
+  confidence?: number;
+  source: 'auto' | 'manual';
+  locked?: boolean;
+  /** The pano asset the pose was solved from. The pose is stale when the scene's pano changes. */
+  assetId?: string;
+  depthAssetId?: string;
+}
+
+export interface IPanoTourEdge {
+  id: string;
+  a: string; // scene id
+  b: string; // scene id
+  source: 'auto' | 'manual';
+  disabled?: boolean;
+  distanceM?: number;
+  confidence?: number;
+}
+
+export type PanoTourSpace = 'indoor' | 'outdoor' | 'both';
+
+export type PanoTourSpacing = 'under2' | '2to4' | '4to8' | 'over8';
+
+/** Capture settings sent to the pano-connect job. */
+export interface IPanoTourCaptureParams {
+  cameraHeightM: number;
+  levelled: boolean;
+  space: PanoTourSpace;
+  spacing: PanoTourSpacing;
+  multiFloor: boolean;
+  shootingOrder: boolean;
+  maxLinkM?: number;
+  maxLinks: number;
+  minLinkAngleDeg: number;
+  quality: 'fast' | 'accurate';
+  /** Also build a 3D dollhouse of the rooms. */
+  dollhouse?: boolean;
+}
+
+/** Tour look, applied in the browser when the story is built. */
+export interface IPanoTourStyle {
+  hotspotIcon: string; // Lucide icon name
+  hotspotColor: string;
+  hotspotOpacity?: number; // icon, 0 to 1
+  hotspotBgColor?: string;
+  hotspotBgOpacity?: number; // 0 to 1
+  hotspotFaceCamera?: boolean; // billboard; default on
+  hotspotSizeDeg: number;
+  transition: TransitionType;
+  transitionDurationMs: number;
+}
+
+/** One floor of a dollhouse: a GLB of the room shell in the tour frame (metres, Y up). */
+export interface IPanoTourDollhouseFloor {
+  groupId: string;
+  floor: number;
+  assetId: string;
+  /** Floor height in the tour frame. */
+  levelY: number;
+}
+
+/** A dollhouse scene made by xr/panoconnect: the 3D overview the tour opens on. */
+export interface IPanoTourDollhouse {
+  sceneId: string;
+  groupId: string;
+  floors: IPanoTourDollhouseFloor[];
+}
+
+export interface IPanoTourSettings {
+  capture: IPanoTourCaptureParams;
+  style: IPanoTourStyle;
+  edges: IPanoTourEdge[];
+  lastJobId?: string;
+  dollhouses?: IPanoTourDollhouse[];
+}
+
+/** Marks a hotspot made by xr/panoconnect. A re-run replaces only `auto` ones. */
+export interface IEntityTourLink {
+  edgeId: string;
+  targetSceneId: string;
+  auto: boolean;
+}
 ```
 
 ## story/scenes/prefabs.ts
@@ -2003,6 +2047,7 @@ export enum TransitionType {
   ZOOM_IN_FADE_ZOOM_OUT = 'ZOOM_IN_FADE_ZOOM_OUT',
   ZOOM_IN_FADE = 'ZOOM_IN_FADE',
   ZOOM_OUT_FADE = 'ZOOM_OUT_FADE',
+  /** Turn to the clicked hotspot, move toward it, and crossfade into the next scene. Panorama tours. */
   WALK = 'WALK',
 }
 
@@ -2139,6 +2184,7 @@ export interface IStorySettings {
   allowedOrigins?: string[];
   options?: IStoryOptions;
   tags?: ITag[]; // the global tags of the story, these can be used on scenes and entities
+  panoTour?: IPanoTourSettings; // the pano tour graph and settings from xr/panoconnect
 }
 
 export interface IStoryOptions {
