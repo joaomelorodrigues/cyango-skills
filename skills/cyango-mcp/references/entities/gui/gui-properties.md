@@ -401,7 +401,7 @@ No default `width` / `height` in JSX — size comes from flex layout or the asse
 
 | Visual | Fields to set | Notes |
 |--------|---------------|-------|
-| Size | `iconSize` | Default `30`. `width` / `height` in GUI data **do not** control Lucide icon size — only `iconSize` does |
+| Size | `iconSize` | Default `30`. `width` / `height` in GUI data **do not** control Lucide icon size — only `iconSize` does. The box is `iconSize` square and padding sits inside it, so the glyph is `iconSize` minus both paddings |
 | Which icon | `iconSrc` | Lucide icon name in PascalCase (e.g. `"X"`, `"ChevronLeft"`, `"Play"`). The whole Lucide set ships with the runtime — no asset, upload, or SVG. Invalid or empty → `ArrowRight`, so a typo fails silently as an arrow |
 | Background fill | `backgroundColor` + `backgroundOpacity` | Default `backgroundOpacity` is **0** (transparent) |
 | Border | `borderColor` + `borderOpacity` | — |

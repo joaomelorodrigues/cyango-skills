@@ -53,6 +53,8 @@ Common names (Lucide, PascalCase):
 | Fullscreen | `Maximize`, `Minimize` |
 
 > **Sizing gotcha**: `width` / `height` do **not** size a `GUI_ICON`. Only `iconSize` does. Set the box on the parent container instead.
+>
+> **Padding gotcha**: the icon box is always `iconSize` × `iconSize`, so padding sits inside it and shrinks the glyph. `iconSize` 20 with padding 15 draws nothing, and the button looks empty. For a bigger click area, set `iconSize` to the glyph size plus both paddings (`iconSize` 50 with padding 15 gives a 20 px glyph).
 
 ---
 
