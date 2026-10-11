@@ -19,17 +19,25 @@ function run(cmd) {
 
 run(`npm run bump:${bump}`);
 run("npm run sync:skill-version");
+run("node scripts/pin-mcp.mjs");
 
 const version = readPackageVersion(root);
-const versionFiles = ["package.json", "plugin/.claude-plugin/plugin.json", "plugin/skills/cyango-mcp/SKILL.md"];
+const releasePaths = [
+  "package.json",
+  "plugin/.claude-plugin/plugin.json",
+  "plugin/.mcp.json",
+  "plugin/package.json",
+  "plugin/package-lock.json",
+  "plugin/skills",
+];
 
-const dirty = execSync(`git status --porcelain ${versionFiles.join(" ")}`, {
+run(`git add ${releasePaths.join(" ")}`);
+const dirty = execSync("git diff --cached --name-only", {
   cwd: root,
   encoding: "utf8",
 }).trim();
 
 if (dirty) {
-  run(`git add ${versionFiles.join(" ")}`);
   run(`git commit -m "chore: release v${version}"`);
 }
 
@@ -44,4 +52,10 @@ run(`git push origin v${version}`);
 run("npm run publish:npm");
 run("npm run publish:skills-sh");
 
+const sha = execSync("git rev-parse HEAD", { cwd: root, encoding: "utf8" }).trim();
+run(`node scripts/update-grok-catalog.mjs ${sha}`);
+
 console.log(`Released @cyango-tools/skills@${version}`);
+console.log(
+  "Claude scans main after the push. Publish the passing version in the directory if auto-publish is off.",
+);

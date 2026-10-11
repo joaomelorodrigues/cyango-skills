@@ -61,18 +61,24 @@ Source resolution order, first hit wins: `--types-dir=<path>`, `CYANGO_SHARED_TY
 
 ## Publishing a release
 
-Releases sync the skill version, push to GitHub, publish to npm, and seed skills.sh telemetry.
+Publish a new `@cyango-tools/mcp-server` from the private connector repo first when the connector itself changed. Then, from this repo:
 
 ```bash
 npm run release:patch   # or release:minor / release:major
 ```
 
+Commit guide edits under `plugin/skills/` before that command, or leave them unstaged. The release commit includes them.
+
 What `release:*` does:
 
-1. Regenerate `references/cyango-shared-types.md`, bump `package.json`, and sync the version line in `plugin/skills/cyango-mcp/SKILL.md`
-2. Commit, tag (`v<version>`), and push to `origin`
-3. Publish `@cyango-tools/skills` to npmjs
-4. Run `npx skills add joaomelorodrigues/cyango-skills --skill cyango-mcp` (skills.sh telemetry)
+1. Bump `@cyango-tools/skills`, and write that version into `plugin/skills/cyango-mcp/SKILL.md` and `plugin/.claude-plugin/plugin.json`
+2. Pin `plugin/.mcp.json` and `plugin/package.json` to the newest `@cyango-tools/mcp-server` on npm, and refresh `plugin/package-lock.json`
+3. Commit, tag (`v<version>`), and push to `origin`
+4. Publish `@cyango-tools/skills` to npmjs
+5. Seed skills.sh with `npx skills add joaomelorodrigues/cyango-skills/plugin --skill cyango-mcp`
+6. Move the Cyango pin on `joaomelorodrigues/plugin-marketplace` branch `cyango-plugin` to this commit
+
+Claude scans `main` after the push. Publish the passing version in the directory when auto-publish is off. Grok Build picks up the guide and the connector pin after the catalog pull request is merged.
 
 If you already pushed to GitHub and only need npm + skills.sh:
 
