@@ -16,5 +16,9 @@
     "studio",
     "3d"
   ],
-  "icon": "./.claude-plugin/icon.png"
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://cyango.com/docs/studio/ai-agents-mcp",
+  "supportUrl": "https://cyango.com/contacts",
+  "privacyPolicyUrl": "https://github.com/joaomelorodrigues/cyango-skills/blob/main/plugin/PRIVACY.md",
+  "termsOfServiceUrl": "https://cyango.com/terms-of-service"
 }
