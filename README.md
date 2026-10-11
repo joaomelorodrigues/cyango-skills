@@ -23,7 +23,7 @@ This installs from the public GitHub repo and registers anonymous install teleme
 
 ## Claude and Grok
 
-The `plugin/` folder is the installable Cyango plugin. It contains this skill and starts `@cyango-tools/mcp-server` on the same computer as Studio. Claude's directory and the Grok Build catalog both install that folder. The connector source stays in the private Cyango repository.
+The `plugin/` folder is the installable Cyango plugin. It contains this skill and starts `@cyango-tools/mcp-server` on the same computer as Cyango xr/studio. Claude's directory and the Grok Build catalog both install that folder. The connector source stays in the private Cyango repository.
 
 ## Available skills
 

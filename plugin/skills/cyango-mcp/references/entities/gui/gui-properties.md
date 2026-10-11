@@ -230,7 +230,7 @@ breakpoint and per hover state.
 
 ## Type defaults
 
-These defaults describe what the **Cyango Studio editor** actually renders for each `GUI_*` type. They come from hardcoded JSX fallbacks in the editor's `GUI2D_*` components: if a key is **missing** from `gui.currentValue.<breakpoint>.<state>`, the component supplies the value below. Missing keys are **not** written back into story JSON — `get_entity` only shows what you set.
+These defaults describe what the **Cyango xr/studio** actually renders for each `GUI_*` type. They come from hardcoded JSX fallbacks in the editor's `GUI2D_*` components: if a key is **missing** from `gui.currentValue.<breakpoint>.<state>`, the component supplies the value below. Missing keys are **not** written back into story JSON — `get_entity` only shows what you set.
 
 Each `GUI_*` component applies props in this order:
 
