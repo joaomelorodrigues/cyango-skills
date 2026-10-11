@@ -59,7 +59,7 @@ function seedSkillsShListing(version) {
 
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cyango-skills-sh-seed-"));
   try {
-    execSync(`npx --yes skills add ${repo} --skill ${skill} -y`, {
+    execSync(`npx --yes skills add ${repo}/plugin --skill ${skill} -y`, {
       cwd: tmpDir,
       stdio: "inherit",
       env: process.env,

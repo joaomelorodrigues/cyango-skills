@@ -21,7 +21,7 @@ run(`npm run bump:${bump}`);
 run("npm run sync:skill-version");
 
 const version = readPackageVersion(root);
-const versionFiles = ["package.json", "skills/cyango-mcp/SKILL.md"];
+const versionFiles = ["package.json", "plugin/.claude-plugin/plugin.json", "plugin/skills/cyango-mcp/SKILL.md"];
 
 const dirty = execSync(`git status --porcelain ${versionFiles.join(" ")}`, {
   cwd: root,

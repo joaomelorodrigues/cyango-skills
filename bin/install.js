@@ -4,9 +4,9 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { readPackageVersion, patchSkillMdFile } from "./skill-version-patch.mjs";
 
-const SKILLS_PATH = "skills";
+const SKILLS_PATH = "plugin/skills";
 
-/** Skills shipped inside the npm tarball (`files`: bin, skills). */
+/** Skills shipped inside the npm tarball (`files`: bin, plugin/skills). */
 const AVAILABLE_SKILLS = ["cyango-mcp"];
 
 const pkgRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");

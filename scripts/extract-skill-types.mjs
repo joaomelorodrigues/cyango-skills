@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(root, "skills", "cyango-mcp", "references", "cyango-shared-types.md");
+const OUT = path.join(root, "plugin", "skills", "cyango-mcp", "references", "cyango-shared-types.md");
 
 // Modules reachable through the MCP story tools.
 const INCLUDE_MODULES = [

@@ -20,6 +20,11 @@ npx skills add joaomelorodrigues/cyango-skills --skill cyango-mcp
 
 This installs from the public GitHub repo and registers anonymous install telemetry on [skills.sh](https://skills.sh/joaomelorodrigues/cyango-skills/cyango-mcp).
 
+
+## Claude and Grok
+
+The `plugin/` folder is the installable Cyango plugin. It contains this skill and starts `@cyango-tools/mcp-server` on the same computer as Studio. Claude's directory and the Grok Build catalog both install that folder. The connector source stays in the private Cyango repository.
+
 ## Available skills
 
 | Skill | Description |
@@ -28,11 +33,11 @@ This installs from the public GitHub repo and registers anonymous install teleme
 
 ## Adding skills to a project manually
 
-If you prefer not to use the CLI, copy the contents of `skills/<skill-name>/` into `.agents/skills/<skill-name>/` in your project.
+If you prefer not to use the CLI, copy the contents of `plugin/skills/<skill-name>/` into `.agents/skills/<skill-name>/` in your project.
 
 ## Updating a skill
 
-The CLI copies only from the **installed npm package** (`skills/<name>/` in the tarball). It does **not** pull from GitHub. Re-run install to overwrite `.agents/skills/`:
+The CLI copies only from the **installed npm package** (`plugin/skills/<name>/` in the tarball). It does **not** pull from GitHub. Re-run install to overwrite `.agents/skills/`:
 
 ```bash
 npx @cyango-tools/skills@latest install cyango-mcp
@@ -42,7 +47,7 @@ Use `@latest` (or a pinned version) so `npx` does not keep an old cached tarball
 
 ## Generated type reference
 
-`skills/cyango-mcp/references/cyango-shared-types.md` is generated, not hand-written. It gives the agent the exact shape of every story field, so the markdown pages can cover behaviour instead of trying to enumerate fields.
+`plugin/skills/cyango-mcp/references/cyango-shared-types.md` is generated, not hand-written. It gives the agent the exact shape of every story field, so the markdown pages can cover behaviour instead of trying to enumerate fields.
 
 ```bash
 npm run types:skill
@@ -64,7 +69,7 @@ npm run release:patch   # or release:minor / release:major
 
 What `release:*` does:
 
-1. Regenerate `references/cyango-shared-types.md`, bump `package.json`, and sync the version line in `skills/cyango-mcp/SKILL.md`
+1. Regenerate `references/cyango-shared-types.md`, bump `package.json`, and sync the version line in `plugin/skills/cyango-mcp/SKILL.md`
 2. Commit, tag (`v<version>`), and push to `origin`
 3. Publish `@cyango-tools/skills` to npmjs
 4. Run `npx skills add joaomelorodrigues/cyango-skills --skill cyango-mcp` (skills.sh telemetry)

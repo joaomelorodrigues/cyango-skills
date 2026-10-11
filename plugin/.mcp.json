@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cyango": {
+      "command": "npx",
+      "args": ["-y", "@cyango-tools/mcp-server@2.0.27"]
+    }
+  }
+}
