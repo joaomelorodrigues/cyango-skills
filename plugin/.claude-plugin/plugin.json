@@ -1,7 +1,7 @@
 {
   "name": "cyango",
   "displayName": "Cyango",
-  "version": "1.5.15",
+  "version": "1.5.16",
   "description": "Edit a live Cyango Studio story on this computer: scenes, layout, models, and interactions.",
   "author": {
     "name": "Cyango",
@@ -10,5 +10,11 @@
   "homepage": "https://www.cyango.com/xr-studio",
   "repository": "https://github.com/joaomelorodrigues/cyango-skills",
   "license": "MIT",
-  "keywords": ["cyango", "xr", "studio", "3d"]
+  "keywords": [
+    "cyango",
+    "xr",
+    "studio",
+    "3d"
+  ],
+  "icon": "./.claude-plugin/icon.png"
 }

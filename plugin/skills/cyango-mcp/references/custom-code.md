@@ -164,13 +164,13 @@ not `await` it. `closeSystemModal()` closes whichever modal is open.
 | `ASSETS_CONVERTING` | Assets still converting notice |
 | `EXTERNAL_URL` | Leave-the-story confirm; pass `options.externalUrl` |
 | `USER_INTERACT` | Tap-to-start gate |
-| `CACHE_CONTENTS` | Offline download panel; the user starts the download there |
+| `CACHE_CONTENTS` | Panel where the visitor saves the story for offline viewing |
 | `ECOMMERCE` | Ecommerce panel |
 | `QR_CODE` | QR code to open the story on a headset |
 | `XR_CHOICE` | VR or AR choice |
 | `MOBILE_AR` | Mobile AR launch; pass `options.mobileARLaunchUrl` |
 
-Offline download is `CACHE_CONTENTS`, and this one line is the whole implementation:
+Offline viewing uses `CACHE_CONTENTS`. Open that panel with:
 
 ```js
 cyango.uiState.openSystemModal(cyango.types.SystemModalType.CACHE_CONTENTS);
@@ -250,7 +250,7 @@ Change scene:
 cyango.storyState.setActiveScene('target-scene-id');
 ```
 
-Open the offline download panel:
+Open the offline viewing panel:
 
 ```js
 cyango.uiState.openSystemModal(cyango.types.SystemModalType.CACHE_CONTENTS);
