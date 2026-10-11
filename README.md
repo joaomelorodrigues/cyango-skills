@@ -21,9 +21,9 @@ npx skills add joaomelorodrigues/cyango-skills --skill cyango-mcp
 This installs from the public GitHub repo and registers anonymous install telemetry on [skills.sh](https://skills.sh/joaomelorodrigues/cyango-skills/cyango-mcp).
 
 
-## Claude and Grok
+## Claude, Grok, and Cursor
 
-The `plugin/` folder is the installable Cyango plugin. It contains this skill and starts `@cyango-tools/mcp-server` on the same computer as Cyango xr/studio. Claude's directory and the Grok Build catalog both install that folder. The connector source stays in the private Cyango repository.
+The `plugin/` folder is the installable Cyango plugin. It contains this skill and starts `@cyango-tools/mcp-server` on the same computer as Cyango xr/studio. Claude's directory, the Grok Build catalog, and the Cursor Marketplace all install that folder. Cursor reads `.cursor-plugin/plugin.json` and `mcp.json`. The connector source stays in the private Cyango repository.
 
 ## Available skills
 
@@ -71,14 +71,14 @@ Commit guide edits under `plugin/skills/` before that command, or leave them uns
 
 What `release:*` does:
 
-1. Bump `@cyango-tools/skills`, and write that version into `plugin/skills/cyango-mcp/SKILL.md` and `plugin/.claude-plugin/plugin.json`
-2. Pin `plugin/.mcp.json` and `plugin/package.json` to the newest `@cyango-tools/mcp-server` on npm, and refresh `plugin/package-lock.json`
+1. Bump `@cyango-tools/skills`, and write that version into `plugin/skills/cyango-mcp/SKILL.md`, `plugin/.claude-plugin/plugin.json`, and `plugin/.cursor-plugin/plugin.json`
+2. Pin `plugin/.mcp.json`, `plugin/mcp.json`, and `plugin/package.json` to the newest `@cyango-tools/mcp-server` on npm, and refresh `plugin/package-lock.json`
 3. Commit, tag (`v<version>`), and push to `origin`
 4. Publish `@cyango-tools/skills` to npmjs
 5. Seed skills.sh with `npx skills add joaomelorodrigues/cyango-skills/plugin --skill cyango-mcp`
 6. Move the Cyango pin on `joaomelorodrigues/plugin-marketplace` branch `cyango-plugin` to this commit
 
-Claude scans `main` after the push. Publish the passing version in the directory when auto-publish is off. Grok Build picks up the guide and the connector pin after the catalog pull request is merged.
+Claude scans `main` after the push. Publish the passing version in the directory when auto-publish is off. Grok Build picks up the guide and the connector pin after the catalog pull request is merged. The Cursor Marketplace reviews each update before the listing moves.
 
 If you already pushed to GitHub and only need npm + skills.sh:
 

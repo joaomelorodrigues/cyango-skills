@@ -25,17 +25,21 @@ function latestMcpVersion() {
 
 const version = latestMcpVersion();
 
-const mcpPath = path.join(pluginDir, ".mcp.json");
-const mcp = JSON.parse(fs.readFileSync(mcpPath, "utf8"));
-const args = mcp.mcpServers?.cyango?.args;
-const pinIndex = Array.isArray(args)
-  ? args.findIndex((arg) => typeof arg === "string" && arg.startsWith(`${PACKAGE}@`))
-  : -1;
-if (pinIndex < 0) {
-  throw new Error(`${mcpPath} has no ${PACKAGE}@ pin`);
+function pinMcpConfig(filePath) {
+  const mcp = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  const args = mcp.mcpServers?.cyango?.args;
+  const pinIndex = Array.isArray(args)
+    ? args.findIndex((arg) => typeof arg === "string" && arg.startsWith(`${PACKAGE}@`))
+    : -1;
+  if (pinIndex < 0) {
+    throw new Error(`${filePath} has no ${PACKAGE}@ pin`);
+  }
+  args[pinIndex] = `${PACKAGE}@${version}`;
+  fs.writeFileSync(filePath, `${JSON.stringify(mcp, null, 2)}\n`);
 }
-args[pinIndex] = `${PACKAGE}@${version}`;
-fs.writeFileSync(mcpPath, `${JSON.stringify(mcp, null, 2)}\n`);
+
+pinMcpConfig(path.join(pluginDir, ".mcp.json"));
+pinMcpConfig(path.join(pluginDir, "mcp.json"));
 
 const pluginPackagePath = path.join(pluginDir, "package.json");
 const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, "utf8"));

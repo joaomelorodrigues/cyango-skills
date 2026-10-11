@@ -1,0 +1,16 @@
+{
+  "name": "cyango",
+  "owner": {
+    "name": "Cyango"
+  },
+  "metadata": {
+    "description": "Edit a live Cyango xr/studio story on this computer."
+  },
+  "plugins": [
+    {
+      "name": "cyango",
+      "source": "plugin",
+      "description": "Edit a live Cyango xr/studio story on this computer: scenes, layout, models, and interactions."
+    }
+  ]
+}

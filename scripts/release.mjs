@@ -25,7 +25,9 @@ const version = readPackageVersion(root);
 const releasePaths = [
   "package.json",
   "plugin/.claude-plugin/plugin.json",
+  "plugin/.cursor-plugin/plugin.json",
   "plugin/.mcp.json",
+  "plugin/mcp.json",
   "plugin/package.json",
   "plugin/package-lock.json",
   "plugin/skills",
