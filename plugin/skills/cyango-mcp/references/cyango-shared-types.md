@@ -1174,6 +1174,8 @@ export interface IEntityTeleport {
 export interface IEntityModel3D {
   /** Render the model invisible while keeping its meshes available for raycast/physics collision. */
   isCollider?: boolean;
+  /** With isCollider, the invisible model writes depth at render order 0.5, so it hides hotspots and GUI behind it. */
+  occludes?: boolean;
 }
 
 export interface IEntityMapProperties {
