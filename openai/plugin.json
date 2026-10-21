@@ -1,0 +1,109 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "cyango",
+  "version": "1.5.16",
+  "description": "Edit a live Cyango xr/studio story on this computer: scenes, layout, models, and interactions.",
+  "author": {
+    "name": "Cyango",
+    "url": "https://www.cyango.com"
+  },
+  "homepage": "https://www.cyango.com/xr-studio",
+  "repository": "https://github.com/joaomelorodrigues/cyango-skills",
+  "license": "MIT",
+  "keywords": [
+    "cyango",
+    "xr",
+    "studio",
+    "3d"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Cyango",
+        "shortDescription": "Build XR stories in Cyango",
+        "longDescription": "Cyango edits the story that is open in Cyango xr/studio on this computer. Ask for a change in plain words and see it land in the editor: add and arrange scenes, build GUI panels, buttons and text, place 3D models, primitives, lights and Gaussian splats, wire up actions and timelines, and insert free stock images and models with their author and license.\n\nOpen a story in Cyango xr/studio and turn MCP on in Story Settings before you start. The plugin runs a local connector on port 3099. Story changes go between ChatGPT and the open editor on this computer. Saving stays a manual step in the editor.\n\nGuide: https://cyango.com/docs/studio/ai-agents-mcp",
+        "developerName": "Cyango",
+        "category": "Design",
+        "capabilities": [
+          "Edit scenes",
+          "Build GUI layouts",
+          "Place 3D models and lights",
+          "Insert stock assets",
+          "Upload assets",
+          "Instantiate prefabs"
+        ],
+        "websiteURL": "https://www.cyango.com/xr-studio",
+        "supportURL": "https://cyango.com/contacts",
+        "privacyPolicyURL": "https://github.com/joaomelorodrigues/cyango-skills/blob/main/plugin/PRIVACY.md",
+        "termsOfServiceURL": "https://cyango.com/terms-of-service",
+        "defaultPrompt": [
+          "List the scenes in my open Cyango story.",
+          "Add a welcome panel with a title and a Start button to the first scene.",
+          "Find a free beach image and place it in the first scene."
+        ],
+        "brandColor": "#000FA6",
+        "composerIcon": "./assets/icon.png",
+        "composerIconDark": "./assets/icon.png",
+        "logo": "./assets/icon.png",
+        "logoDark": "./assets/icon.png"
+      },
+      "onboardingSkill": "./skills/get-started/SKILL.md",
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "List the scenes of the open story",
+              "prompt": "List the scenes in my open Cyango story.",
+              "tools_triggered": "list_scenes",
+              "expected_behavior": "Returns the name and type of each scene in the story open in Cyango xr/studio. Nothing in the story changes."
+            },
+            {
+              "description": "Add a scene",
+              "prompt": "Add a new scene called Lobby to my Cyango story.",
+              "tools_triggered": "add_scenes",
+              "expected_behavior": "A scene named Lobby appears in the scene list of the open editor."
+            },
+            {
+              "description": "Build a GUI panel",
+              "prompt": "In the first scene, add a panel with the title Welcome and a Start button below it.",
+              "tools_triggered": "list_scenes, add_entities",
+              "expected_behavior": "A panel with a Welcome text and a Start button appears in the first scene, with the button under the title."
+            },
+            {
+              "description": "Add and then change a 3D object",
+              "prompt": "Add a red sphere to the first scene, then make it twice as big.",
+              "tools_triggered": "list_scenes, add_entities, update_entities",
+              "expected_behavior": "A red sphere appears in the first scene and its scale then doubles."
+            },
+            {
+              "description": "Place a free stock image",
+              "prompt": "Find a free image of a beach and place it in the first scene. Tell me who made it and its license.",
+              "tools_triggered": "list_asset_providers, search_provider_assets, insert_assets",
+              "expected_behavior": "A beach image from a free provider appears in the first scene, and the reply names the author and the license."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Request unrelated to Cyango",
+              "prompt": "What is the weather in Lisbon today?"
+            },
+            {
+              "description": "Purchase request",
+              "prompt": "Buy me a Cyango Pro subscription."
+            },
+            {
+              "description": "Action outside the plugin tools",
+              "prompt": "Publish my Cyango story to the public web."
+            }
+          ]
+        },
+        "demo_recording_url": "https://REPLACE_WITH_DEMO_VIDEO_URL",
+        "commerce": false,
+        "commerce_description": "This plugin does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "First release. Edit a live Cyango xr/studio story from ChatGPT: scenes, GUI and 3D entities, stock and uploaded assets, and prefabs."
+      }
+    }
+  }
+}
