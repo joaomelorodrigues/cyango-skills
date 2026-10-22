@@ -1839,12 +1839,13 @@ export interface IPanoTourDollhouseFloor {
   assetId: string;
   /** Floor height in the tour frame. */
   levelY: number;
+  /** Where the shell sits along X: the groups of a tour go side by side. */
+  offsetX?: number;
 }
 
-/** A dollhouse scene made by xr/panoconnect: the 3D overview the tour opens on. */
+/** The dollhouse scene made by xr/panoconnect: the 3D overview the tour opens on, every group's shells side by side. */
 export interface IPanoTourDollhouse {
   sceneId: string;
-  groupId: string;
   floors: IPanoTourDollhouseFloor[];
 }
 

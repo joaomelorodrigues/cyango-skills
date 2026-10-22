@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@cyango-tools/mcp-server@2.0.27"
+        "@cyango-tools/mcp-server@2.0.31"
       ]
     }
   }
