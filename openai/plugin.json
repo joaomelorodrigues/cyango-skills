@@ -20,10 +20,10 @@
     "com.openai": {
       "interface": {
         "displayName": "Cyango",
-        "shortDescription": "Build virtual tours, apps and experiences in Cyango",
+        "shortDescription": "Build virtual tours and apps",
         "longDescription": "Cyango edits the story that is open in Cyango xr/studio on this computer. Ask for a change in plain words and see it land in the editor: add and arrange scenes, build GUI panels, buttons and text, place 3D models, primitives, lights and Gaussian splats, wire up actions and timelines, and insert free stock images and models with their author and license.\n\nOpen a story in Cyango xr/studio and turn MCP on in Story Settings before you start. The plugin runs a local connector on port 3099. Story changes go between ChatGPT and the open editor on this computer. Saving stays a manual step in the editor.\n\nGuide: https://cyango.com/docs/studio/ai-agents-mcp",
         "developerName": "Cyango",
-        "category": "Design",
+        "category": "Creativity",
         "capabilities": [
           "Edit scenes",
           "Build GUI layouts",
