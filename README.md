@@ -25,6 +25,16 @@ This installs from the public GitHub repo and registers anonymous install teleme
 
 The `plugin/` folder is the installable Cyango plugin. It contains this skill and starts `@cyango-tools/mcp-server` on the same computer as Cyango xr/studio. Claude's directory, the Grok Build catalog, and the Cursor Marketplace all install that folder. Cursor reads `.cursor-plugin/plugin.json` and `mcp.json`. The connector source stays in the private Cyango repository.
 
+## ChatGPT
+
+OpenAI lists Cyango as a desktop-only plugin. The ZIP holds the skills, the `get-started` onboarding skill, and the pinned `@cyango-tools/mcp-server` with its dependencies, because a desktop-only plugin must ship its stdio server. The manifest and the review test cases are in `openai/plugin.json`.
+
+```bash
+npm run build:openai   # writes build/openai/cyango-openai-<version>.zip
+```
+
+Upload the ZIP at platform.openai.com/plugins: **Create plugin**, **Skills only**, **Upload ZIP**. The organization must be allowlisted for local MCP first. Build after `publish:*`, so that the ZIP has the newest connector pin.
+
 ## Available skills
 
 | Skill | Description |
@@ -64,27 +74,19 @@ Source resolution order, first hit wins: `--types-dir=<path>`, `CYANGO_SHARED_TY
 Publish a new `@cyango-tools/mcp-server` from the private connector repo first when the connector itself changed. Then, from this repo:
 
 ```bash
-npm run release:patch   # or release:minor / release:major
+npm run publish:patch   # or publish:minor / publish:major
 ```
 
-Commit guide edits under `plugin/skills/` before that command, or leave them unstaged. The release commit includes them.
+What `publish:*` does:
 
-What `release:*` does:
-
-1. Bump `@cyango-tools/skills`, and write that version into `plugin/skills/cyango-mcp/SKILL.md`, `plugin/.claude-plugin/plugin.json`, and `plugin/.cursor-plugin/plugin.json`
+1. Bump `@cyango-tools/skills`, regenerate `cyango-shared-types.md`, and write the version into `plugin/skills/cyango-mcp/SKILL.md`, `plugin/.claude-plugin/plugin.json`, `plugin/.cursor-plugin/plugin.json`, and `openai/plugin.json`
 2. Pin `plugin/.mcp.json`, `plugin/mcp.json`, and `plugin/package.json` to the newest `@cyango-tools/mcp-server` on npm, and refresh `plugin/package-lock.json`
-3. Commit, tag (`v<version>`), and push to `origin`
+3. Commit those files, tag (`v<version>`), and push to `origin`. Other changes in the working tree stay uncommitted.
 4. Publish `@cyango-tools/skills` to npmjs
 5. Seed skills.sh with `npx skills add joaomelorodrigues/cyango-skills/plugin --skill cyango-mcp`
 6. Move the Cyango pin on `joaomelorodrigues/plugin-marketplace` branch `cyango-plugin` to this commit
 
 Claude scans `main` after the push. Publish the passing version in the directory when auto-publish is off. Grok Build picks up the guide and the connector pin after the catalog pull request is merged. The Cursor Marketplace reviews each update before the listing moves.
-
-If you already pushed to GitHub and only need npm + skills.sh:
-
-```bash
-npm run publish:patch   # or publish:minor / publish:major
-```
 
 Republish the current version without a bump:
 
@@ -121,7 +123,7 @@ npm run publish:skills-sh
 Or run the full release next time:
 
 ```bash
-npm run release:patch
+npm run publish:patch
 ```
 
 The skills.sh page can take a minute to appear after telemetry. Search indexing may lag longer than the skill page itself.

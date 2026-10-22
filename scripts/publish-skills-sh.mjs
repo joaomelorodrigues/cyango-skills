@@ -42,7 +42,7 @@ function ensureGitPushed() {
         "  npm run publish:skills-sh",
         "",
         "Or run the full release flow:",
-        "  npm run release:patch",
+        "  npm run publish:patch",
       ].join("\n"),
     );
     process.exit(1);

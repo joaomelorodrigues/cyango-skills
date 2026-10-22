@@ -34,7 +34,7 @@
         ],
         "websiteURL": "https://www.cyango.com/xr-studio",
         "supportURL": "https://cyango.com/contacts",
-        "privacyPolicyURL": "https://github.com/joaomelorodrigues/cyango-skills/blob/main/plugin/PRIVACY.md",
+        "privacyPolicyURL": "https://cyango.com/privacy-policy",
         "termsOfServiceURL": "https://cyango.com/terms-of-service",
         "defaultPrompt": [
           "List the scenes in my open Cyango story.",
@@ -97,7 +97,6 @@
             }
           ]
         },
-        "demo_recording_url": "https://REPLACE_WITH_DEMO_VIDEO_URL",
         "commerce": false,
         "commerce_description": "This plugin does not sell products or process payments."
       },

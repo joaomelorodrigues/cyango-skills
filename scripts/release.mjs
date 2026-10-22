@@ -18,12 +18,15 @@ function run(cmd) {
 }
 
 run(`npm run bump:${bump}`);
+run("npm run types:skill");
 run("npm run sync:skill-version");
 run("node scripts/pin-mcp.mjs");
 
 const version = readPackageVersion(root);
 const releasePaths = [
   "package.json",
+  "package-lock.json",
+  "openai/plugin.json",
   "plugin/.claude-plugin/plugin.json",
   "plugin/.cursor-plugin/plugin.json",
   "plugin/.mcp.json",
@@ -61,3 +64,4 @@ console.log(`Released @cyango-tools/skills@${version}`);
 console.log(
   "Claude scans main after the push. Publish the passing version in the directory if auto-publish is off.",
 );
+console.log("Run npm run build:openai for the OpenAI plugin ZIP.");

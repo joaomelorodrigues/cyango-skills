@@ -22,6 +22,11 @@ const cursorManifest = JSON.parse(fs.readFileSync(cursorPluginJson, "utf8"));
 cursorManifest.version = version;
 fs.writeFileSync(cursorPluginJson, JSON.stringify(cursorManifest, null, 2) + "\n");
 
+const openaiPluginJson = path.join(root, "openai", "plugin.json");
+const openaiManifest = JSON.parse(fs.readFileSync(openaiPluginJson, "utf8"));
+openaiManifest.version = version;
+fs.writeFileSync(openaiPluginJson, JSON.stringify(openaiManifest, null, 2) + "\n");
+
 const pluginPackagePath = path.join(root, "plugin", "package.json");
 const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, "utf8"));
 pluginPackage.version = version;
