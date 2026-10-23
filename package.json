@@ -1,6 +1,6 @@
 {
   "name": "@cyango-tools/skills",
-  "version": "1.5.20",
+  "version": "1.5.21",
   "description": "CLI to install Cyango agent skills",
   "type": "module",
   "scripts": {
