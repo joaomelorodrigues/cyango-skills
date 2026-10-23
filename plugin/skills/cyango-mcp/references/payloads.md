@@ -247,20 +247,13 @@ Call `list_asset_providers` first for the provider names and the categories each
 ```json
 {
   "items": [
-    { "source": "path", "value": "/Users/me/renders/lobby.jpg" },
-    { "source": "url", "value": "https://example.com/logo.svg", "name": "logo.svg" },
-    {
-      "source": "directory",
-      "value": "/Users/me/props",
-      "recursive": true,
-      "fileTypes": ["glb"],
-      "maxFiles": 20
-    }
+    { "url": "https://example.com/renders/lobby.jpg" },
+    { "url": "https://example.com/logo.svg", "name": "logo.svg" }
   ]
 }
 ```
 
-Add `insert` to an item only when every asset it produces should land at the same transform; otherwise upload first and follow with one `insert_assets`. Accepted extensions are listed in [assets-common.md](assets/assets-common.md#import-workflow).
+Add `insert` to an item to place that asset right after upload; for many placements, upload first and follow with one `insert_assets`. Accepted extensions are listed in [assets-common.md](assets/assets-common.md#import-workflow).
 
 ---
 

@@ -20,7 +20,6 @@ function run(cmd) {
 run(`npm run bump:${bump}`);
 run("npm run types:skill");
 run("npm run sync:skill-version");
-run("node scripts/pin-mcp.mjs");
 
 const version = readPackageVersion(root);
 const releasePaths = [
@@ -31,8 +30,6 @@ const releasePaths = [
   "plugin/.cursor-plugin/plugin.json",
   "plugin/.mcp.json",
   "plugin/mcp.json",
-  "plugin/package.json",
-  "plugin/package-lock.json",
   "plugin/skills",
 ];
 

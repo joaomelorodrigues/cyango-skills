@@ -26,8 +26,3 @@ const openaiPluginJson = path.join(root, "openai", "plugin.json");
 const openaiManifest = JSON.parse(fs.readFileSync(openaiPluginJson, "utf8"));
 openaiManifest.version = version;
 fs.writeFileSync(openaiPluginJson, JSON.stringify(openaiManifest, null, 2) + "\n");
-
-const pluginPackagePath = path.join(root, "plugin", "package.json");
-const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, "utf8"));
-pluginPackage.version = version;
-fs.writeFileSync(pluginPackagePath, JSON.stringify(pluginPackage, null, 2) + "\n");

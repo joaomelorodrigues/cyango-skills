@@ -11,7 +11,7 @@ Use this guide when working with editor assets through MCP.
   - user library assets (`getAssets(folderId, page, perPage, filters)`)
   - both merged
 - `insert_assets` — insert one or many assets in one batched call. Each row may set `sceneId`; optional top-level `sceneId` is the fallback for rows that omit it, so **one call can target one or more scenes** (the MCP server sends one bridge `insertAssets` per distinct scene).
-- `upload_assets` — upload assets from a local path, URL, or directory through the editor upload pipeline. Returns uploaded asset IDs and can optionally chain a shared insert.
+- `upload_assets` — upload assets from public http(s) URLs through the editor upload pipeline. Returns uploaded asset IDs and can optionally chain an insert. Local files and folders are not supported: ask the user to upload them in the editor, then use `list_assets`.
 - `remove_assets` — delete one or more library assets by ID. Returns structured outcomes: `deleted[]`, `blocked[]` (with scene/story names), or `partialFailures[]`. **Always surface `blocked[]` to the user. Never retry without the user first removing the asset from the named scenes or stories.**
 
 ## `list_assets` input
@@ -55,14 +55,10 @@ Use this guide when working with editor assets through MCP.
 ```ts
 {
   items: Array<{
-    source: "path" | "url" | "directory",
-    value: string,
+    url: string, // public http(s) URL
     name?: string,
     mimeType?: string,
     assetFolderId?: string,
-    recursive?: boolean, // directory only; default false
-    fileTypes?: string[], // mime prefixes ("image/") or extensions ("jpg", "glb")
-    maxFiles?: number, // directory cap; default 100
     insert?: {
       sceneId: string,
       parentEntityId?: string,
@@ -78,8 +74,8 @@ Use this guide when working with editor assets through MCP.
 
 ## Import workflow
 
-- MIME inferred from file extension; override with `mimeType` when needed.
-- Directory mode skips dot-files, subdirs (unless `recursive: true`), and types the caller filtered out with `fileTypes`.
+- MIME comes from the server's `Content-Type`, then from the file extension; override with `mimeType` when needed.
+- The server downloads each URL. Private, loopback and internal addresses are refused, and so are URLs with credentials.
 - The **editor** is the authority on what may be uploaded and rejects anything outside this list:
 
   | Category | Extensions |
@@ -99,7 +95,7 @@ Use this guide when working with editor assets through MCP.
 - Two extensions are classified by **content**, not extension: a `.json` is a Lottie only if it parses as a Bodymovin document (otherwise font/data), and a `.zip` is a splat only if it holds a SOG bundle (otherwise a plain file). Check `assetCategory` on the returned asset before inserting.
 - Large uploads take time and may timeout (30 s per chunk). Prefer smaller files when possible.
 - Default upload folder is `My Uploads`; pass `assetFolderId` to target a specific library folder.
-- Per-batch cap: 200 MiB and 100 files by default (`CYANGO_MCP_MAX_UPLOAD_BYTES` / `CYANGO_MCP_MAX_UPLOAD_FILES` on the MCP server raise them; the editor's own limit is higher).
+- Caps: 200 MiB per file and 100 URLs per call.
 
 ## Splat formats
 
@@ -107,7 +103,7 @@ Splats can carry several source formats on one asset (`rad`, `spz`, `sog`, `ply`
 
 ## Multi-file insert semantics
 
-`insert` on an item that produces multiple assets (especially `source: "directory"`) is applied as-is to every uploaded asset:
+The same `insert` copied onto several items is applied as-is to every uploaded asset:
 
 - same `position`
 - same `rotation`

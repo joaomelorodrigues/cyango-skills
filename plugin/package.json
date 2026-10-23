@@ -1,9 +1,0 @@
-{
-  "name": "cyango-plugin",
-  "private": true,
-  "version": "1.5.19",
-  "description": "Locks the Cyango connector version installed with this plugin.",
-  "dependencies": {
-    "@cyango-tools/mcp-server": "2.0.31"
-  }
-}

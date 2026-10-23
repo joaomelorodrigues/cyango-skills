@@ -2,10 +2,8 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "cyango": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["${PLUGIN_ROOT}/server/node_modules/@cyango-tools/mcp-server/dist/index.js"],
-      "cwd": "${PLUGIN_ROOT}"
+      "type": "streamable-http",
+      "url": "https://mcp.cyango.com/mcp"
     }
   }
 }

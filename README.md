@@ -23,17 +23,17 @@ This installs from the public GitHub repo and registers anonymous install teleme
 
 ## Claude, Grok, and Cursor
 
-The `plugin/` folder is the installable Cyango plugin. It contains this skill and starts `@cyango-tools/mcp-server` on the same computer as Cyango xr/studio. Claude's directory, the Grok Build catalog, and the Cursor Marketplace all install that folder. Cursor reads `.cursor-plugin/plugin.json` and `mcp.json`. The connector source stays in the private Cyango repository.
+The `plugin/` folder is the installable Cyango plugin. It contains this skill and points the AI app to the hosted Cyango MCP server, `https://mcp.cyango.com/mcp`. The AI app signs the user in with OAuth on first use. Claude's directory, the Grok Build catalog, and the Cursor Marketplace all install that folder. Claude and Grok read `.mcp.json`; Cursor reads `.cursor-plugin/plugin.json` and `mcp.json`. The server source stays in the private Cyango repository.
 
 ## ChatGPT
 
-OpenAI lists Cyango as a desktop-only plugin. The ZIP holds the skills, the `get-started` onboarding skill, and the pinned `@cyango-tools/mcp-server` with its dependencies, because a desktop-only plugin must ship its stdio server. The manifest and the review test cases are in `openai/plugin.json`.
+The OpenAI plugin uses the same hosted server. The ZIP holds the manifest, `mcp.json` with the server URL, the skills, and the `get-started` onboarding skill. The manifest and the review test cases are in `openai/plugin.json`.
 
 ```bash
 npm run build:openai   # writes build/openai/cyango-openai-<version>.zip
 ```
 
-Upload the ZIP at platform.openai.com/plugins: **Create plugin**, **Skills only**, **Upload ZIP**. The organization must be allowlisted for local MCP first. Build after `publish:*`, so that the ZIP has the newest connector pin.
+Upload the ZIP at platform.openai.com/plugins, then connect the server under **MCPs**. OpenAI finds sign-in through the server's OAuth metadata and registers itself (DCR). The server answers the domain challenge from its `OPENAI_APPS_CHALLENGE` setting.
 
 ## Available skills
 
@@ -71,7 +71,7 @@ Source resolution order, first hit wins: `--types-dir=<path>`, `CYANGO_SHARED_TY
 
 ## Publishing a release
 
-Publish a new `@cyango-tools/mcp-server` from the private connector repo first when the connector itself changed. Then, from this repo:
+Deploy the MCP server from its own repo first when the server changed. Then, from this repo:
 
 ```bash
 npm run publish:patch   # or publish:minor / publish:major
@@ -80,13 +80,12 @@ npm run publish:patch   # or publish:minor / publish:major
 What `publish:*` does:
 
 1. Bump `@cyango-tools/skills`, regenerate `cyango-shared-types.md`, and write the version into `plugin/skills/cyango-mcp/SKILL.md`, `plugin/.claude-plugin/plugin.json`, `plugin/.cursor-plugin/plugin.json`, and `openai/plugin.json`
-2. Pin `plugin/.mcp.json`, `plugin/mcp.json`, and `plugin/package.json` to the newest `@cyango-tools/mcp-server` on npm, and refresh `plugin/package-lock.json`
-3. Commit those files, tag (`v<version>`), and push to `origin`. Other changes in the working tree stay uncommitted.
-4. Publish `@cyango-tools/skills` to npmjs
-5. Seed skills.sh with `npx skills add joaomelorodrigues/cyango-skills/plugin --skill cyango-mcp`
-6. Move the Cyango pin on `joaomelorodrigues/plugin-marketplace` branch `cyango-plugin` to this commit
+2. Commit those files, tag (`v<version>`), and push to `origin`. Other changes in the working tree stay uncommitted.
+3. Publish `@cyango-tools/skills` to npmjs
+4. Seed skills.sh with `npx skills add joaomelorodrigues/cyango-skills/plugin --skill cyango-mcp`
+5. Move the Cyango pin on `joaomelorodrigues/plugin-marketplace` branch `cyango-plugin` to this commit
 
-Claude scans `main` after the push. Publish the passing version in the directory when auto-publish is off. Grok Build picks up the guide and the connector pin after the catalog pull request is merged. The Cursor Marketplace reviews each update before the listing moves.
+Claude scans `main` after the push. Publish the passing version in the directory when auto-publish is off. Grok Build picks up the guide after the catalog pull request is merged. The Cursor Marketplace reviews each update before the listing moves.
 
 Republish the current version without a bump:
 
@@ -96,7 +95,7 @@ npm run publish:npm && npm run publish:skills-sh
 
 ### npm registry notes
 
-This package uses scope **`@cyango-tools/skills`** (same org as **`@cyango-tools/mcp-server`** on npmjs). The repo `.npmrc` sends **`@cyango-tools/*`** to **npmjs** and keeps **`@cyango/*`** on Gitea for internal packages, matching the MCP server setup. If a global `~/.npmrc` overrides **`@cyango-tools:registry`**, use the scripts below so the tarball still lands on npmjs.
+This package uses scope **`@cyango-tools/skills`** on npmjs. The repo `.npmrc` sends **`@cyango-tools/*`** to **npmjs** and keeps **`@cyango/*`** on Gitea for internal packages. If a global `~/.npmrc` overrides **`@cyango-tools:registry`**, use the scripts below so the tarball still lands on npmjs.
 
 If you publish manually, pass both `--registry` and the scope override:
 

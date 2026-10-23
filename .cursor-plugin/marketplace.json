@@ -4,13 +4,13 @@
     "name": "Cyango"
   },
   "metadata": {
-    "description": "Edit a live Cyango xr/studio story on this computer."
+    "description": "Edit a live Cyango xr/studio story."
   },
   "plugins": [
     {
       "name": "cyango",
       "source": "plugin",
-      "description": "Edit a live Cyango xr/studio story on this computer: scenes, layout, models, and interactions."
+      "description": "Edit a live Cyango xr/studio story: scenes, layout, models, and interactions."
     }
   ]
 }
