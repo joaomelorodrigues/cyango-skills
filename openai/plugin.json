@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "cyango",
-  "version": "1.5.19",
+  "version": "1.5.20",
   "description": "Edit a live Cyango xr/studio story: scenes, layout, models, and interactions.",
   "author": {
     "name": "Cyango",
