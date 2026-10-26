@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "cyango",
-  "version": "1.5.21",
+  "version": "1.5.22",
   "description": "Edit a live Cyango xr/studio story: scenes, layout, models, and interactions.",
   "author": {
     "name": "Cyango",
@@ -37,9 +37,9 @@
         "privacyPolicyURL": "https://cyango.com/privacy-policy",
         "termsOfServiceURL": "https://cyango.com/terms-of-service",
         "defaultPrompt": [
-          "List the scenes in my open Cyango story.",
-          "Add a welcome panel with a title and a Start button to the first scene.",
-          "Find a free beach image and place it in the first scene."
+          "Turn the first scene into a hotel-lobby welcome: a large title, one line of copy, and a Start button.",
+          "Stage a showroom in the first scene: a pedestal, a red sphere, and a warm spotlight aimed at it.",
+          "Find a free coastline photo, place it in the first scene, and credit the photographer and license."
         ],
         "brandColor": "#000FA6",
         "composerIcon": "./assets/icon.png",
@@ -53,33 +53,33 @@
           "positive": [
             {
               "description": "List the scenes of the open story",
-              "prompt": "List the scenes in my open Cyango story.",
+              "prompt": "Name every scene in the story I have open.",
               "tools_triggered": "list_scenes",
               "expected_behavior": "Returns the name and type of each scene in the story open in Cyango xr/studio. Nothing in the story changes."
             },
             {
               "description": "Add a scene",
-              "prompt": "Add a new scene called Lobby to my Cyango story.",
+              "prompt": "Add a scene called Gallery so I can send visitors there next.",
               "tools_triggered": "add_scenes",
-              "expected_behavior": "A scene named Lobby appears in the scene list of the open editor."
+              "expected_behavior": "A scene named Gallery appears in the scene list of the open editor."
             },
             {
               "description": "Build a GUI panel",
-              "prompt": "In the first scene, add a panel with the title Welcome and a Start button below it.",
+              "prompt": "In the first scene, build a welcome panel: the title Welcome, one line under it, and a Start button.",
               "tools_triggered": "list_scenes, add_entities",
-              "expected_behavior": "A panel with a Welcome text and a Start button appears in the first scene, with the button under the title."
+              "expected_behavior": "A panel appears in the first scene with a Welcome title, a line of text under it, and a Start button under the text."
             },
             {
               "description": "Add and then change a 3D object",
-              "prompt": "Add a red sphere to the first scene, then make it twice as big.",
+              "prompt": "In the first scene, put a red sphere on a pedestal, then make the sphere twice as big.",
               "tools_triggered": "list_scenes, add_entities, update_entities",
-              "expected_behavior": "A red sphere appears in the first scene and its scale then doubles."
+              "expected_behavior": "A pedestal and a red sphere appear in the first scene, then the sphere's scale doubles."
             },
             {
               "description": "Place a free stock image",
-              "prompt": "Find a free image of a beach and place it in the first scene. Tell me who made it and its license.",
+              "prompt": "Find a free coastline photograph, place it in the first scene, and tell me the photographer and the license.",
               "tools_triggered": "list_asset_providers, search_provider_assets, insert_assets",
-              "expected_behavior": "A beach image from a free provider appears in the first scene, and the reply names the author and the license."
+              "expected_behavior": "A coastline photograph from a free provider appears in the first scene, and the reply names the photographer and the license."
             }
           ],
           "negative": [

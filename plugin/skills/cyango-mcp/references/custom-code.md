@@ -481,5 +481,5 @@ After writing Custom Code actions:
 
 1. Use `get_entity` or `get_scene` to verify the action array contains the new action and preserved existing actions.
 2. Use `capture_screenshot` only for visible scene/GUI effects; custom-code errors are usually visible in the browser console, not the screenshot.
-3. If the user asks to persist the story, call `save_story` only after explicit save permission.
+3. Saving is manual. Tell the user to save the story in the editor.
 
