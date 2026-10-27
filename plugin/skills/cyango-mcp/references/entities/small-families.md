@@ -87,6 +87,7 @@ Both are usually large or infinite-scale; transform is minimal or rotation-only.
 | `CAMERA` | `camera?: IAnimation<IEntityCamera>` | `type` (perspective / orthographic), `fov`, `near`, `far`, `controls` (`ICameraControls` — orbit, damping, targets). Pairs with `CAMERA_LOOK_AT` actions. Auto-created per scene. |
 | `PLAYER` | `player?: IAnimation<IEntityPlayer>` | `PlayerType` (`FIRST_PERSON`, `THIRD_PERSON`, `FREE_CAMERA`), height, radius, jump, `wasd` / `joystick` / `xrLocomotion` speeds, `physics`. One per scene. |
 | `WEBCAM` | `webcam?: IEntityWebcam` | `cameraFacingUser`, `mirrored`. |
+| `IMAGE_TARGET` | `imageTarget?: IEntityImageTarget` | The image to track is the entity's asset. The uniform `scale` is the printed width in metres. `keepWhenLost`, `smoothing`. Children are anchored to the image, in units of the image width. One per `IMAGE_TRACKING_SCENE`; see [scenes.md](../scenes/scenes.md#image-tracking-scenes). |
 | `FACE_MESH` | *(transform follows the AR face anchor)* | Face-tracking mesh overlay. Call `get_entity` on an existing one to read the keys a story actually uses rather than assuming a schema. |
 
 ---

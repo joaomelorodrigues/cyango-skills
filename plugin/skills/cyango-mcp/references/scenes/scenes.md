@@ -28,6 +28,18 @@ Compare with `get_story_state` / `get_scene` if a `sceneType` is rejected.
 | `PANORAMA_360` / `PANORAMA_180_SCENE` | none — add the panorama entity via `insert_assets` |
 | `MAP_2D_SCENE` / `MAP_3D_SCENE` | `SKYBOX` + `MAP_2D` / `MAP_3D` |
 | `WEBCAM_SCENE` | `WEBCAM`; camera controls disabled |
+| `IMAGE_TRACKING_SCENE` | `IMAGE_TARGET` (no image), `AMBIENT_LIGHT`; camera at `[0, 0.3, 0.3]` looking at the target |
+
+### Image tracking scenes
+
+In `IMAGE_TRACKING_SCENE`, the player shows the camera feed and looks for the image of the scene's `IMAGE_TARGET`. Content goes **inside** the target as children:
+
+- The image is 1 unit wide and lies flat on the XZ plane. Its centre is the origin, +Y points out of the image and the image top points to -Z.
+- The target's uniform `scale` is the printed width in metres (default `[0.2, 0.2, 0.2]`, a 20 cm print). Set all three values the same. The player tells the tracker this width.
+- Children use the target's units: `1` is the image width. A cube half as wide as the image is scale `0.5`, resting at `y = 0.25`. Children grow and shrink with the target's scale.
+- The player sets the target's position and rotation from tracking. Do not set them. The camera entity does nothing in the player.
+- Studio seeds a built-in marker image and an `HDR`. MCP cannot carry assets in `addScenes`, so bind an image to the target with `insert_assets` or tell the user to pick one.
+- Use one `IMAGE_TARGET` per scene. Use `ON_TARGET_FOUND` / `ON_TARGET_LOST` on the target to start or stop content.
 
 > **HDR caveat**: in Studio, `MODEL_VIEWER` also gets a default Poly Haven HDR **asset** bound to the `HDR` entity. The bridge's `addScenes` command carries scenes only, so an MCP-created scene has the `HDR` entity with no source. Bind an HDR asset with `insert_assets` (or tell the user to pick one) when the lighting matters.
 

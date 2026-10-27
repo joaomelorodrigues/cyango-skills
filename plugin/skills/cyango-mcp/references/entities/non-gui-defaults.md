@@ -174,6 +174,13 @@ Both types get one looping clip in `animations.currentValue` so the animation ru
 | `cameraFacingUser` | `true` |
 | `mirrored` | `true` |
 
+### `IMAGE_TARGET` (flat object, not `IAnimation`)
+
+| Field | Default |
+|-------|---------|
+| `keepWhenLost` | `false` (hide the content when the image is lost) |
+| `smoothing` | `false` |
+
 ### `TEXT_3D`
 
 `text3D.currentValue`:
@@ -202,6 +209,7 @@ Both types get one looping clip in `animations.currentValue` so the animation ru
 | `SKYBOX` | Usually nothing | Procedural sky at distance 4000 |
 | `HDR` | Linked asset | No environment map until asset bound |
 | `WEBCAM` | Usually nothing | Front-facing, mirrored |
+| `IMAGE_TARGET` | Linked image asset, uniform `scale` (printed width in metres) | Nothing to track until an image is bound; `scale` `[0.2, 0.2, 0.2]` is a 20 cm print |
 | `TEXT_3D` | `text3D.currentValue.text`, `scale` | Reads "Text" at 1× scale |
 | `LOTTIE` | Linked Lottie asset; GUI `width`/`height` on `gui.currentValue.desktop.default` | Nothing renders until a Lottie asset is bound; 512 px raster, looping "Main" clip |
 | `SPRITE` | Linked spritesheet asset; `spritesheet.cols` / `rows` / `fps` | Nothing renders until asset + grid are set |

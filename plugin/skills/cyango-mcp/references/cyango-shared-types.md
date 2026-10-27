@@ -1009,6 +1009,7 @@ export interface IEntity {
   splat?: IAnimation<IEntitySplat>; // the splat properties of the entity
   uniformScale?: IEntityUniformScale;
   webcam?: IEntityWebcam; // the webcam properties of the entity
+  imageTarget?: IEntityImageTarget; // the tracked image properties of an IMAGE_TARGET entity
   gui?: IAnimation<IEntityGUI>; // the gui properties of the entity
   tooltip?: string; // the tooltip of the entity
   animations?: IAnimation<IEntityAnimation[]>; // the animations of the entity, used for 3D models
@@ -1344,6 +1345,17 @@ export interface IEntityWebcam {
   mirrored?: boolean; // if the webcam feed should be mirrored
 }
 
+/**
+ * An IMAGE_TARGET is the image the camera looks for. Its image is the entity's asset, and its
+ * children are the content anchored to it. Marker frame: X right, Y out of the image, Z towards
+ * the bottom of the image, origin at the image centre. The image is 1 unit wide and the entity's
+ * uniform scale is its printed width in metres, so children keep their size relative to the image.
+ */
+export interface IEntityImageTarget {
+  keepWhenLost?: boolean; // keep the content at its last pose when the image is lost, instead of hiding it
+  smoothing?: boolean; // filter the pose: steadier, a little more lag
+}
+
 /*
 Notes: all subproperties are of type string because we manipulate and convert from and to strings on the Entity html tag in the end.
 */
@@ -1588,6 +1600,7 @@ export enum EntityTypes {
   HDR = 'HDR',
   WEBCAM = 'WEBCAM',
   FACE_MESH = 'FACE_MESH',
+  IMAGE_TARGET = 'IMAGE_TARGET', // a tracked image; its children are anchored to it
   CAMERA = 'CAMERA',
   PLAYER = 'PLAYER',
 
@@ -1737,6 +1750,7 @@ export enum SceneTypes {
   WEBCAM_SCENE = 'WEBCAM_SCENE', // a scene with a live webcam feed
   FACE_TRACKING_SCENE = 'FACE_TRACKING_SCENE', // a scene with face tracking
   AR_WORLD_TRACKING_SCENE = 'AR_WORLD_TRACKING_SCENE', // a scene with ar world tracking
+  IMAGE_TRACKING_SCENE = 'IMAGE_TRACKING_SCENE', // content anchored to a tracked image seen by the camera
   PASSWORD_SCENE = 'PASSWORD_SCENE', // a scene with a password input
   NOT_FOUND_SCENE = 'NOT_FOUND_SCENE', // a scene with a 404 page
 }
@@ -2145,6 +2159,8 @@ export enum EventType {
   ON_ENTITY_REMOVED = 'ON_ENTITY_REMOVED', // the action will be triggered when an entity is removed
   ON_DATE_RANGE = 'ON_DATE_RANGE', // the action will be triggered when the current date is within the specified date ranges
   ON_GEOLOCATION = 'ON_GEOLOCATION', // the action will be triggered when the geolocation is changed
+  ON_TARGET_FOUND = 'ON_TARGET_FOUND', // the action will be triggered when the camera finds the image target
+  ON_TARGET_LOST = 'ON_TARGET_LOST', // the action will be triggered when the camera loses the image target
 }
 
 export enum LayerType {
