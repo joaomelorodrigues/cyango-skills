@@ -28,7 +28,7 @@ Compare with `get_story_state` / `get_scene` if a `sceneType` is rejected.
 | `PANORAMA_360` / `PANORAMA_180_SCENE` | none — add the panorama entity via `insert_assets` |
 | `MAP_2D_SCENE` / `MAP_3D_SCENE` | `SKYBOX` + `MAP_2D` / `MAP_3D` |
 | `WEBCAM_SCENE` | `WEBCAM`; camera controls disabled |
-| `IMAGE_TRACKING_SCENE` | `IMAGE_TARGET` (no image), `AMBIENT_LIGHT`; camera at `[0, 0.3, 0.3]` looking at the target |
+| `IMAGE_TRACKING_SCENE` | `IMAGE_TARGET` (no image), `AMBIENT_LIGHT`, `SKYBOX` (editing backdrop only; the player shows the camera image); camera at `[0, 0.3, 0.3]` looking at the target |
 
 ### Image tracking scenes
 
