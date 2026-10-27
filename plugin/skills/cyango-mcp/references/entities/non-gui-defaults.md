@@ -178,8 +178,7 @@ Both types get one looping clip in `animations.currentValue` so the animation ru
 
 | Field | Default |
 |-------|---------|
-| `keepWhenLost` | `false` (hide the content when the image is lost) |
-| `smoothing` | `false` |
+| `extendedTracking` | `false` (hide the content when the image is lost; on: room tracking in AR, gyroscope in phone browsers) |
 
 ### `TEXT_3D`
 

@@ -1352,8 +1352,7 @@ export interface IEntityWebcam {
  * uniform scale is its printed width in metres, so children keep their size relative to the image.
  */
 export interface IEntityImageTarget {
-  keepWhenLost?: boolean; // keep the content at its last pose when the image is lost, instead of hiding it
-  smoothing?: boolean; // filter the pose: steadier, a little more lag
+  extendedTracking?: boolean; // after the image is lost, keep the content where the image was with the device's motion tracking
 }
 
 /*

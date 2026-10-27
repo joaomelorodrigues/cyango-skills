@@ -175,7 +175,7 @@ Only on an `IMAGE_TARGET` entity.
 | Type | Description |
 |------|-------------|
 | `ON_TARGET_FOUND` | The camera finds the target's image, and its content appears. |
-| `ON_TARGET_LOST` | The camera loses the image. The content hides unless `imageTarget.keepWhenLost` is set. |
+| `ON_TARGET_LOST` | The camera loses the image. The content hides unless `imageTarget.extendedTracking` is set. |
 
 ### Conditional (use with `conditions`)
 
