@@ -32,14 +32,16 @@ Compare with `get_story_state` / `get_scene` if a `sceneType` is rejected.
 
 ### Image tracking scenes
 
-In `IMAGE_TRACKING_SCENE`, the player shows the camera feed and looks for the image of the scene's `IMAGE_TARGET`. Content goes **inside** the target as children:
+In `IMAGE_TRACKING_SCENE`, the player shows the camera feed and looks for the image of each `IMAGE_TARGET` in the scene. Content goes **inside** a target as children:
 
 - The image is 1 unit wide and lies flat on the XZ plane. Its centre is the origin, +Y points out of the image and the image top points to -Z.
 - The target's uniform `scale` is the printed width in metres (default `[0.2, 0.2, 0.2]`, a 20 cm print). Set all three values the same. The player tells the tracker this width.
 - Children use the target's units: `1` is the image width. A cube half as wide as the image is scale `0.5`, resting at `y = 0.25`. Children grow and shrink with the target's scale.
 - The player sets the target's position and rotation from tracking. Do not set them. The camera entity does nothing in the player.
 - Studio seeds a built-in marker image and an `HDR`. MCP cannot carry assets in `addScenes`, so bind an image to the target with `insert_assets` or tell the user to pick one.
-- Use one `IMAGE_TARGET` per scene. Use `ON_TARGET_FOUND` / `ON_TARGET_LOST` on the target to start or stop content.
+- A scene can have several `IMAGE_TARGET` entities at the root, each with its own image, content and actions. The player shows up to three images at the same time (four on iPhone). Use images that look different from each other. A target's `position` only lays out the targets in Studio and the player ignores it: give each new target an x offset of about its width plus 5 cm so they do not overlap. Do not change a target's `rotation`.
+- Use `ON_TARGET_FOUND` / `ON_TARGET_LOST` on a target to start or stop its content.
+- **Cylinder targets** (`imageTarget.shape: 'cylinder'`): the image is a label around a can, bottle or straight-sided cup. `scale` is the label's length around the cylinder and `imageTarget.diameter` the cylinder diameter in metres (unset: the label wraps once around). The frame differs from a flat target: +Y runs up the cylinder axis towards the top of the label, +Z points out through the label centre, and the origin is on the axis at the label's mid-height. The label surface is at `z = diameter / (2 * scale)` in target units, so put content in front of it or on top, not at the origin (inside the can). Android, Quest and desktop camera pages track cylinders; iPhone and iPad (the App Clip) track only flat images.
 
 > **HDR caveat**: in Studio, `MODEL_VIEWER` also gets a default Poly Haven HDR **asset** bound to the `HDR` entity. The bridge's `addScenes` command carries scenes only, so an MCP-created scene has the `HDR` entity with no source. Bind an HDR asset with `insert_assets` (or tell the user to pick one) when the lighting matters.
 

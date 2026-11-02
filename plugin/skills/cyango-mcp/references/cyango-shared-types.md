@@ -1347,13 +1347,20 @@ export interface IEntityWebcam {
 
 /**
  * An IMAGE_TARGET is the image the camera looks for. Its image is the entity's asset, and its
- * children are the content anchored to it. Marker frame: X right, Y out of the image, Z towards
- * the bottom of the image, origin at the image centre. The image is 1 unit wide and the entity's
- * uniform scale is its printed width in metres, so children keep their size relative to the image.
+ * children are the content anchored to it. The image is 1 unit wide and the entity's uniform scale
+ * is its printed width in metres, so children keep their size relative to the image.
+ * Flat frame: X right, Y out of the image, Z towards the bottom of the image, origin at the image centre.
+ * Cylinder frame: the image wraps around the side of a cylinder, such as a can label. Y up the axis
+ * towards the top of the image, Z out through the image centre, X right, origin on the axis at the
+ * image's mid-height. The printed width is the label's length around the cylinder.
  */
 export interface IEntityImageTarget {
   extendedTracking?: boolean; // after the image is lost, keep the content where the image was with the device's motion tracking
+  shape?: ImageTargetShape; // 'flat' when unset
+  diameter?: number; // cylinder diameter in metres; unset: the image wraps once around the cylinder
 }
+
+export type ImageTargetShape = 'flat' | 'cylinder';
 
 /*
 Notes: all subproperties are of type string because we manipulate and convert from and to strings on the Entity html tag in the end.

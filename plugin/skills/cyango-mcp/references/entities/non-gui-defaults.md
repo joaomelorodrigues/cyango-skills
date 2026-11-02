@@ -179,6 +179,8 @@ Both types get one looping clip in `animations.currentValue` so the animation ru
 | Field | Default |
 |-------|---------|
 | `extendedTracking` | `false` (hide the content when the image is lost; on: room tracking in AR, gyroscope in phone browsers) |
+| `shape` | `'flat'`; `'cylinder'`: the image is a label around a can, bottle or straight-sided cup |
+| `diameter` | unset; cylinder diameter in metres. Unset: the label wraps once around (`scale / π`) |
 
 ### `TEXT_3D`
 
