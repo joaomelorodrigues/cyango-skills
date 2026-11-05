@@ -52,48 +52,51 @@
         "test_cases": {
           "positive": [
             {
-              "description": "List the scenes of the open story",
-              "prompt": "Name every scene in the story I have open.",
+              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. List the scenes of the open story",
+              "prompt": "Name every scene in the story I have open and give each scene type.",
               "tools_triggered": "list_scenes",
               "expected_behavior": "Returns the name and type of each scene in the story open in Cyango xr/studio. Nothing in the story changes."
             },
             {
-              "description": "Add a scene",
-              "prompt": "Add a scene called Gallery so I can send visitors there next.",
-              "tools_triggered": "add_scenes",
-              "expected_behavior": "A scene named Gallery appears in the scene list of the open editor."
+              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Add a scene",
+              "prompt": "Add one 3D tour scene called Gallery.",
+              "tools_triggered": "add_scene",
+              "expected_behavior": "Exactly one new TOUR_3D scene titled Gallery appears in the connected editor. The tool reports a verified sceneId; no navigation action or publishing is implied. add_scenes with one row is an equivalent valid implementation."
             },
             {
-              "description": "Build a GUI panel",
-              "prompt": "In the first scene, build a welcome panel: the title Welcome, one line under it, and a Start button.",
-              "tools_triggered": "list_scenes, add_entities",
-              "expected_behavior": "A panel appears in the first scene with a Welcome title, a line of text under it, and a Start button under the text."
+              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Build a GUI panel",
+              "prompt": "In the first scene, build a screen-space welcome panel: the title Welcome, the line Explore the gallery. under it, and a Start button below. The button does not need an action yet.",
+              "tools_triggered": "list_scenes, get_scene, add_entities",
+              "expected_behavior": "Under the existing GUI_SCREEN of the first scene, a GUI_CONTAINER panel contains Welcome, Explore the gallery., and a visible Start button in that order. The button is a GUI_CONTAINER with a GUI_TEXT label. Text uses en-US and GUI properties use desktop.default. No click action is required. The tool confirms all created IDs; verify visibility in the editor."
             },
             {
-              "description": "Add and then change a 3D object",
-              "prompt": "In the first scene, put a red sphere on a pedestal, then make the sphere twice as big.",
-              "tools_triggered": "list_scenes, add_entities, update_entities",
-              "expected_behavior": "A pedestal and a red sphere appear in the first scene, then the sphere's scale doubles."
+              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Add and then change a 3D object",
+              "prompt": "In the first scene, put a red sphere on a pedestal, then double every component of the sphere scale. Verify its scale after the change.",
+              "tools_triggered": "list_scenes, add_entities, update_entities, get_entity",
+              "expected_behavior": "A pedestal and a red sphere appear in the first scene. After one batched update, scale.currentValue has doubled on all three axes compared with the created sphere; material.currentValue.color remains red. The reply reports the verified before/after scale. No geometry-only resize."
             },
             {
-              "description": "Place a free stock image",
+              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Place a free stock image A configured image provider with working credentials and a free coastline result with author/license metadata is required; verify this before review.",
               "prompt": "Find a free coastline photograph, place it in the first scene, and tell me the photographer and the license.",
-              "tools_triggered": "list_asset_providers, search_provider_assets, insert_assets",
-              "expected_behavior": "A coastline photograph from a free provider appears in the first scene, and the reply names the photographer and the license."
+              "tools_triggered": "list_scenes, list_asset_providers, search_provider_assets, insert_assets",
+              "expected_behavior": "A coastline photograph selected from a configured free image provider is inserted in the first scene with a verified entityId. The reply credits attribution.author and the returned license (and source/license links when present). Do not invent missing credits. If provider access or metadata is unavailable, report that limitation; it is not a passing positive case."
             }
           ],
           "negative": [
             {
               "description": "Request unrelated to Cyango",
-              "prompt": "What is the weather in Lisbon today?"
+              "prompt": "What is the weather in Lisbon today?",
+              "expected_behavior": "Do not call any Cyango tool: weather is outside this plugin. Answer through an appropriate weather capability if available, or explain that live weather is unavailable. Do not modify the story."
             },
             {
               "description": "Purchase request",
-              "prompt": "Buy me a Cyango Pro subscription."
+              "prompt": "Buy me a Cyango Pro subscription.",
+              "expected_behavior": "Do not call Cyango tools or purchase anything. Explain that the plugin cannot buy subscriptions or process payments; direct the user to the Cyango website to manage a plan. Do not claim a purchase occurred."
             },
             {
               "description": "Action outside the plugin tools",
-              "prompt": "Publish my Cyango story to the public web."
+              "prompt": "Publish my Cyango story to the public web.",
+              "expected_behavior": "Do not call Cyango tools to publish and do not claim the story is public. Explain that publishing is outside the plugin tools and must be completed manually in xr/studio."
             }
           ]
         },
@@ -101,7 +104,7 @@
         "commerce_description": "This plugin does not sell products or process payments."
       },
       "publication": {
-        "release_notes": "First release. Edit a live Cyango xr/studio story from ChatGPT: scenes, GUI and 3D entities, stock and uploaded assets, and prefabs."
+        "release_notes": "Review revision: clarified setup and expected behavior for five positive and three negative cases. Server fixes add final mutation verification, consistent MCP error signaling and editor-tab isolation. Requires the corrected MCP server to be deployed and the full review matrix to be validated on ChatGPT Web and Mobile before resubmission."
       }
     }
   }
