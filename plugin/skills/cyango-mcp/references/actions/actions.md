@@ -110,7 +110,7 @@ Notes for `CENTER_GPS`:
 |------|-------------|--------|
 | `DELAY` | Wait for a duration before subsequent steps. | `duration` |
 | `CUSTOM_CODE` | Run sandboxed story-player code with a `customCode` payload. Use the custom-code reference from `SKILL.md`; do not infer syntax from this table alone. | `customCode` |
-| `OPEN_PRODUCT` | Open an XR store product. | — |
+| `OPEN_PRODUCT` | Open the shop panel on a product. The product comes from the target entity's `xrStore`, not from the action. | Optional `targetEntitiesIds` (entity IDs only). No targets means the entity that owns the action. Needs story `ecommerceStoreId`. See [xr-stores.md](../xr-stores/xr-stores.md). |
 | `INSTANTIATE_PREFAB` | Instantiate a prefab; `entityProperties` can act as overrides. | `prefabId` |
 | `NONE` | No operation. | — |
 
