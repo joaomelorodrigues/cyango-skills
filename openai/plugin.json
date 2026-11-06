@@ -30,7 +30,8 @@
           "Place 3D models and lights",
           "Insert stock assets",
           "Upload assets",
-          "Instantiate prefabs"
+          "Instantiate prefabs",
+          "Link store products"
         ],
         "websiteURL": "https://www.cyango.com/xr-studio",
         "supportURL": "https://cyango.com/contacts",
@@ -101,10 +102,10 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "This plugin does not sell products or process payments."
+        "commerce_description": "This plugin does not sell products or process payments. It can read the product catalog of a shop the user already connected in Cyango, and link those products to entities in the story. Checkout happens only in the published Cyango story, outside ChatGPT."
       },
       "publication": {
-        "release_notes": "Review revision: clarified setup and expected behavior for five positive and three negative cases. Server fixes add final mutation verification, consistent MCP error signaling and editor-tab isolation. Requires the corrected MCP server to be deployed and the full review matrix to be validated on ChatGPT Web and Mobile before resubmission."
+        "release_notes": "Adds xr/stores tools: list the shops connected to the workspace, list their products, link the story to a shop, and place products or link them to story entities so a click opens the product page. The tools do not change shops, products, prices or orders, and do not take payments. Earlier fixes stay: final mutation verification, consistent MCP error signaling, and editor-tab isolation."
       }
     }
   }
