@@ -84,7 +84,7 @@ Use this guide when working with editor assets through MCP.
   | Vector | `svg` |
   | HDR | `hdr`, `exr` |
   | Video | `mp4`, `webm`, `mov` |
-  | Audio | `mp3`, `wav`, `aac` |
+  | Audio | `mp3`, `wav`, `aac`, `m4a` |
   | 3D model | `glb` |
   | Splat | `splat`, `ply`, `ksplat`, `spz`, `sog`, `zip` (SOG bundle) |
   | Lottie | `json` |
