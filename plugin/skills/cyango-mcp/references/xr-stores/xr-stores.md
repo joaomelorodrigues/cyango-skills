@@ -1,6 +1,26 @@
-# XR Stores: products in a story
+# XR Stores: product catalog and products in a story
 
-An xr/stores story sells products from one connected shop (Shopify or another platform). The product lives on an entity. The `OPEN_PRODUCT` action only points at that entity.
+An xr/stores story sells products from one shop: a Cyango shop, or a Shopify shop (or another platform) that syncs into Cyango. The product lives on an entity. The `OPEN_PRODUCT` action only points at that entity.
+
+## Where MCP runs
+
+| Connected app | Catalog tools | Story tools |
+|---------------|---------------|-------------|
+| xr/studio (Story Settings > MCP Bridge) | yes | yes |
+| xr/stores (link icon in the header) | yes | no |
+
+`bridge_status` returns `editorApp`. One tab holds the bridge. When the user connects in xr/stores, story tools fail until the user connects again in xr/studio.
+
+## Product catalog
+
+Catalog tools: `create_products`, `update_products`, `delete_products`, `move_products`. They change the shop, not a story. The xr/stores Product Catalog page refreshes after each call.
+
+- **Cyango shops only, for most changes.** `list_ecommerce_stores` returns `catalogEditable: true` for Cyango (NATIVE) shops. Shopify and other synced shops let MCP change only `allowEnterAR`, `hidden` and the variant `assetId`. The rest comes from the platform on each sync.
+- **Variants.** Every product has at least one variant. The first variant is the default. Price, SKU, stock and media are on the variant. In `update_products`, a `variants` row with `variantId` changes that variant. A row without `variantId` adds a variant. `removeVariantIds` deletes variants.
+- **Media.** Give `assetId` from `list_assets` or `upload_assets`. Images, videos, 3D models and splats only. The asset must be `completed`. `assetId: null` removes the media. On a Shopify product it goes back to the Shopify image.
+- **Read before you write.** `list_store_products` with `productId` returns one product with its full description, `hidden` and `taxRates`. Only the fields you pass change. `tags` and `taxRates` replace the whole list.
+- **Delete and move keep used products.** A product that a story uses stays in its shop. The result lists it in `blockedProducts` with the story names. Tell the user. Move works only between two Cyango shops.
+- Currency is an ISO 4217 code (`EUR`). The default is `USD`. `taxRates` is in percent. An empty list uses the shop rates.
 
 ## The parts
 
@@ -72,5 +92,6 @@ xr/stores templates mark each product slot with a `GROUP_BOX` that has `isPlaceh
 ## Limits
 
 - One shop per story.
-- MCP cannot connect a shop, sync Shopify, or change products, prices, stock or orders. Send the user to the xr/stores dashboard for these.
+- MCP cannot create or connect a shop, sync Shopify, or read or change orders. Send the user to the xr/stores dashboard for these.
+- MCP cannot change Shopify product names, prices or stock. The user changes them in Shopify.
 - `cyango.storyState.XRStore` in custom code is the WebXR session store. It is not the shop.

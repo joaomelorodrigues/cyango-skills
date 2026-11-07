@@ -7,11 +7,11 @@ description: 'Cyango MCP: edit a live Cyango story through the batched MCP tools
 
 # Cyango MCP Skill
 
-Write tools are plural and batched: `add_entities`, `remove_entities`, `update_entities`, `add_scenes`, `remove_scenes`, `update_scenes`. `add_scene`, `remove_scene` and `update_scene` are one-scene wrappers over the same protocol. Single-write bridge commands (`addEntity`, `updateScene`, …) do not exist in protocol v7.
+Write tools are plural and batched: `add_entities`, `remove_entities`, `update_entities`, `add_scenes`, `remove_scenes`, `update_scenes`. `add_scene`, `remove_scene` and `update_scene` are one-scene wrappers over the same protocol. Single-write bridge commands (`addEntity`, `updateScene`, …) do not exist in protocol v8.
 
-Utility tools: `bridge_status` (connection, queue depth, protocol version), `validate_patch` (check property paths offline, no editor round-trip), `instantiate_prefab`, `list_assets` / `insert_assets` / `upload_assets` / `remove_assets`, `list_asset_providers` / `search_provider_assets` for free stock assets, `get_story_state`.
+Utility tools: `bridge_status` (connection, connected app, queue depth, protocol version), `validate_patch` (check property paths offline, no editor round-trip), `instantiate_prefab`, `list_assets` / `insert_assets` / `upload_assets` / `remove_assets`, `list_asset_providers` / `search_provider_assets` for free stock assets, `get_story_state`.
 
-xr/stores tools: `list_ecommerce_stores`, `list_store_products`, `set_story_ecommerce_store`, `assign_products`, `add_product_entities`. Read [xr-stores.md](references/xr-stores/xr-stores.md) first.
+xr/stores tools: `list_ecommerce_stores`, `list_store_products`, `set_story_ecommerce_store`, `assign_products`, `add_product_entities`, and the catalog tools `create_products`, `update_products`, `delete_products`, `move_products`. Read [xr-stores.md](references/xr-stores/xr-stores.md) first.
 
 Copy payload shapes from [payloads.md](references/payloads.md) rather than assembling them from field tables.
 
@@ -74,7 +74,7 @@ Types that no longer exist: `EMBED_*` entities and `LIVESTREAM_*` scenes. Older 
 | Audio, 3D text, skybox/HDR, maps, subtitles, groups, camera/player | [small-families.md](references/entities/small-families.md) |
 | Keyframes, timing, media clips | [timeline.md](references/timeline/timeline.md) |
 | Overlapping or z-fighting surfaces, draw order | [common.md](references/entities/common.md#render-order) |
-| A shop, products, "buy" or "add to cart" buttons, xr/stores templates | [xr-stores.md](references/xr-stores/xr-stores.md) |
+| A shop, products, the product catalog, prices, "buy" or "add to cart" buttons, xr/stores templates | [xr-stores.md](references/xr-stores/xr-stores.md) |
 | A prefab placed in a scene | `instantiate_prefab`; prefab bundling notes in [custom-code.md](references/custom-code.md) |
 | The core entity model, visibility flags, `IEntity` fields | [common.md](references/entities/common.md) |
 | Something that "didn't work" or looks wrong | [batching-and-verification.md](rules/batching-and-verification.md#symptom--cause--fix) |

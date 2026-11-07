@@ -21,7 +21,7 @@
       "interface": {
         "displayName": "Cyango",
         "shortDescription": "Build virtual tours and apps",
-        "longDescription": "Cyango edits the story that is open in Cyango xr/studio. Ask for a change in plain words and see it land in the editor: add and arrange scenes, build GUI panels, buttons and text, place 3D models, primitives, lights and Gaussian splats, wire up actions and timelines, and insert free stock images and models with their author and license.\n\nSign in with your Cyango account when you connect. Then open a story in Cyango xr/studio and turn MCP on in Story Settings. Saving stays a manual step in the editor.\n\nGuide: https://cyango.com/docs/studio/ai-agents-mcp",
+        "longDescription": "Cyango edits the story that is open in Cyango xr/studio. Ask for a change in plain words and see it land in the editor: add and arrange scenes, build GUI panels, buttons and text, place 3D models, primitives, lights and Gaussian splats, wire up actions and timelines, and insert free stock images and models with their author and license.\n\nIt also manages the product catalog of your Cyango shops: create, edit, move and delete products, and place them in a story.\n\nSign in with your Cyango account when you connect. Then open a story in Cyango xr/studio and turn MCP on in Story Settings, or select the link icon in the xr/stores header for catalog work. Saving a story stays a manual step in the editor.\n\nGuide: https://cyango.com/docs/studio/ai-agents-mcp",
         "developerName": "Cyango",
         "category": "Creativity",
         "capabilities": [
@@ -31,7 +31,8 @@
           "Insert stock assets",
           "Upload assets",
           "Instantiate prefabs",
-          "Link store products"
+          "Link store products",
+          "Manage product catalog"
         ],
         "websiteURL": "https://www.cyango.com/xr-studio",
         "supportURL": "https://cyango.com/contacts",
@@ -102,10 +103,10 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "This plugin does not sell products or process payments. It can read the product catalog of a shop the user already connected in Cyango, and link those products to entities in the story. Checkout happens only in the published Cyango story, outside ChatGPT."
+        "commerce_description": "This plugin does not sell products or process payments. It can read the product catalog of a shop the user already has in Cyango, edit the products of Cyango shops (names, descriptions, variants, prices, stock, media, visibility), and link products to entities in the story. Shopify products keep their names, prices and stock from Shopify. Checkout happens only in the published Cyango story, outside ChatGPT."
       },
       "publication": {
-        "release_notes": "Adds xr/stores tools: list the shops connected to the workspace, list their products, link the story to a shop, and place products or link them to story entities so a click opens the product page. The tools do not change shops, products, prices or orders, and do not take payments. Earlier fixes stay: final mutation verification, consistent MCP error signaling, and editor-tab isolation."
+        "release_notes": "Adds product catalog tools for xr/stores: create_products, update_products, delete_products and move_products. They edit products of Cyango shops; Shopify products only take media, AR and visibility changes. Products that a story uses are never deleted or moved. MCP can now connect from the xr/stores header, and bridge_status shows the connected app. The tools do not create shops, read orders or take payments."
       }
     }
   }
