@@ -2237,6 +2237,7 @@ export interface IStoryOptions {
   mainButtonTextColor?: string;
   themeButtonBgColor?: string; // background color for system theme UI buttons and containers
   themeIconColor?: string; // icon color for system theme UI buttons
+  openEcommerceOnStart?: boolean; // open the ecommerce store panel when the story starts
   previousSceneButtonActions?: IAction[];
   nextSceneButtonActions?: IAction[];
   customCodePrefabIds?: string[]; // prefabs made available for custom code instantiatePrefab() calls
