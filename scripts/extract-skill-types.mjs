@@ -80,9 +80,9 @@ function resolveTypesDir() {
   const candidates = [
     fromArg && fromArg.slice("--types-dir=".length),
     process.env.CYANGO_SHARED_TYPES,
-    path.join(root, "../cyango-cloud-editor/packages/shared/src/types"),
+    path.join(root, "../cyango-platform/packages/shared/src/types"),
     path.join(root, "node_modules/@cyango/cyango-shared/dist/types"),
-    path.join(root, "../cyango-cloud-editor/packages/shared/dist/types"),
+    path.join(root, "../cyango-platform/packages/shared/dist/types"),
   ].filter(Boolean);
   return candidates.find((c) => fs.existsSync(c)) || null;
 }
