@@ -67,7 +67,7 @@ npm run types:skill
 
 **The allowlist in `scripts/extract-skill-types.mjs` is a disclosure boundary.** This package is public on npm and GitHub. The script emits only the story-editing modules, drops runtime helpers, scrubs internal notes out of doc comments, and **fails the build** if a billing, auth, storage or permission term reaches a declaration. If it refuses to write, do not loosen `SENSITIVE_PATTERNS` to get past it. Add the offending declaration to `DENY_TYPES`, or its module to `DENY_MODULES`.
 
-Source resolution order, first hit wins: `--types-dir=<path>`, `CYANGO_SHARED_TYPES`, a sibling `../cyango-shared/src/types`, then `dist/types` from node_modules. Source is preferred because TypeScript declaration emit drops the trailing `//` comments, and those carry most of the meaning. When no source is found the committed file is kept, so publishing never silently ships an empty reference.
+Source resolution order, first hit wins: `--types-dir=<path>`, `CYANGO_SHARED_TYPES`, the monorepo's `../cyango-cloud-editor/packages/shared/src/types`, then `dist/types` from node_modules. Source is preferred because TypeScript declaration emit drops the trailing `//` comments, and those carry most of the meaning. When no source is found the committed file is kept, so publishing never silently ships an empty reference.
 
 ## Publishing a release
 
