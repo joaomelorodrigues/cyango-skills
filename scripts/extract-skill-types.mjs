@@ -31,7 +31,27 @@ const INCLUDE_MODULES = [
   "story/",
 ];
 
-const DENY_MODULES = ["story/storyTransfers/"];
+// The timeline engine (compile, playback, capture, edit helpers) is editor and player code.
+// The story shape of the timeline is in timeline/index.ts and timeline/tracks.ts, which stay.
+const TIMELINE_ENGINE_MODULES = [
+  "cameraShots",
+  "capture",
+  "clipEdit",
+  "clips",
+  "compile",
+  "duration",
+  "edit",
+  "evaluate",
+  "gsapTrack",
+  "guiOverlay",
+  "keyClipboard",
+  "keyframes",
+  "mediaElement",
+  "sinks",
+  "validate",
+].map((name) => `story/scenes/timeline/${name}.ts`);
+
+const DENY_MODULES = ["story/storyTransfers/", ...TIMELINE_ENGINE_MODULES];
 
 // Included modules are grab-bags in places. These declarations are backend,
 // auth or editor-chrome surface with no story-editing meaning.

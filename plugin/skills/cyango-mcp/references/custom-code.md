@@ -110,7 +110,8 @@ Every block gets the same names, whichever host runs it. What differs is lifetim
 | `THREE` | The app's three.js instance | Never import three; a second copy breaks `instanceof` |
 | `group` | The entity's own `Object3D` | For an action, resolved from the entity it is attached to. `undefined` before the canvas mounts |
 | `entity` | The `IEntity` the block belongs to | `null` for a scene action |
-| `params` | Values from `customCode.params`, keyed by name | Authored on entities; an action's must be written directly |
+| `params` | Values from `customCode.params`, keyed by name. `params.<key>` is always the value now | Read-only. Authored on entities; an action's must be written directly |
+| `effect(run)` | Runs `run` now, and again when a param that it read has a new value | In an action the params do not change, so it runs one time |
 | `scene`, `camera`, `renderer` | The live three.js objects | `undefined` before the canvas mounts |
 | `loaders` | `gltf` (DRACO, KTX2 and meshopt attached), `texture`, `rgbe` | `undefined` before the canvas mounts |
 | `uikitml(html)` | Builds a uikit interface from markup | **Throws in an action.** It needs an entity's lifetime to be driven and disposed |
@@ -322,7 +323,50 @@ On a `GUI_CUSTOM_CODE` entity:
 - Values whose type has no control (nested objects, mixed arrays) still reach the code, but the
   inspector lists them as JSON-only rather than rendering a control.
 
-Changing any param re-runs the entity block that reads it.
+### How a block follows its params
+
+The code of an entity block runs **one time**. A new value of a param, from the inspector or from a
+timeline key, does **not** run it again. The block follows a param in the place where it reads it:
+
+| Where the code reads `params.<key>` | What a new value does |
+|---|---|
+| Inside `effect(() => { ... })` | That effect runs again. Use it for work that depends on params: a geometry, a material, a layout. |
+| Inside `update()` | The code sees the new value on the next frame. Use it for a value that drives motion, such as a speed. |
+| At the top of the block, outside both | **Nothing.** The code read the value one time. The editor shows a note for such a param. |
+
+```js
+const material = new THREE.MeshStandardMaterial();
+const mesh = new THREE.Mesh(undefined, material);
+group.add(mesh);
+
+effect(() => {
+  const geometry = new THREE.SphereGeometry(params.radius, 32, 16);
+  mesh.geometry = geometry;
+  return () => geometry.dispose();   // undo, before the next run and when the block stops
+});
+
+effect(() => {
+  material.color.set(params.color);
+});
+
+return {
+  update: (delta) => {
+    mesh.rotation.y += delta * params.speed;
+  },
+};
+```
+
+Rules for effects:
+
+- An effect depends on the params that it read in its last run. No list to keep.
+- Several new values in one frame make one run of each effect.
+- Return a function from an effect to undo what the run made. It runs before the next run and when the block stops.
+- Read the params **before any `await`**. A read after an `await` is not followed.
+- `effect()` returns a function that stops the effect.
+- `params` is read-only. Keep your own state in a variable.
+
+Timeline keys on a param use the same path: see [timeline.md](timeline/timeline.md). With keys, an
+effect can run on each frame of the animation, so keep the work of that effect small.
 
 ## Custom Code entities
 
@@ -337,8 +381,8 @@ Its code is at `customCode` on the entity, not inside `actions`.
   "entityType": "GUI_CUSTOM_CODE",
   "name": "Instanced field",
   "customCode": {
-    "code": "const mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());\ngroup.add(mesh);\nreturn { update: (delta) => { mesh.rotation.y += delta; } };",
-    "params": [{ "key": "count", "value": 200 }]
+    "code": "const mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());\ngroup.add(mesh);\neffect(() => { mesh.material.color.set(params.color); });\nreturn { update: (delta) => { mesh.rotation.y += delta * params.speed; } };",
+    "params": [{ "key": "color", "value": "#6366f1" }, { "key": "speed", "value": 1 }]
   }
 }
 ```
@@ -346,8 +390,10 @@ Its code is at `customCode` on the entity, not inside `actions`.
 ### The block contract
 
 - The block runs on mount, inside an async function, so top-level `await` works.
+- It runs again only when its code or its list of params changes. A new **value** of a param never runs it again: see "How a block follows its params".
+- `effect(run)` runs `run` now, and again when a param that it read has a new value.
 - It may return `{ update, dispose }`. Both are optional.
-- `update(delta, elapsed)` runs every frame. `dispose()` runs before a re-run and on teardown.
+- `update(delta, elapsed)` runs every frame. `dispose()` runs before a re-run and on teardown, after the cleanups of the effects.
 - Anything left in `group` is removed and disposed automatically, including geometries, materials
   and textures. Tracked timers are cleared too. Write `dispose` only for what was created outside
   the group.
@@ -385,6 +431,44 @@ Under a GUI parent the entity's `group` is a uikit `Container` rather than a `Gr
 output is laid out by the GUI while plain meshes are not laid out and belong in world space.
 
 ### uikitml markup
+
+There are two ways to make an interface follow its params. Both work with inspector edits and with
+timeline keys.
+
+**Build one time, then set properties.** Use this when the param changes a value and not the
+structure: a color, a size, a text. It is the right one for a param with tween keys, because it does
+no build on a frame.
+
+```js
+const root = await uikitml(`
+  <div style="padding: 16px; background-color: #111827; border-radius: 12px">
+    <span style="color: white">start</span>
+  </div>
+`);
+
+effect(() => { root.setProperties({ backgroundColor: params.color }); });
+effect(() => { root.children[0].setProperties({ text: params.title }); });
+```
+
+- `setProperties` changes only the properties that you give. The other properties of the markup stay.
+- `setProperties` takes the uikit name in camelCase (`backgroundColor`). The markup takes it with
+  dashes (`background-color`).
+- Use one effect for each param. Then a color key on each frame does not set the text again.
+
+**Build again.** Use this when the param changes the structure: the number of rows, a different
+layout. Call `uikitml()` inside an effect and dispose the old tree in the cleanup:
+
+```js
+effect(() => {
+  const title = params.title;                       // read before the await inside uikitml
+  const tree = uikitml(`<div><span>${title}</span></div>`);
+  return () => tree.then((root) => root.dispose());
+});
+```
+
+Do not put tween keys on a param that builds again: each frame of the tween builds a new tree. Hold
+keys (text, boolean) are fine, because the effect runs only when the value changes.
+
 
 uikitml is a small subset of HTML, not HTML. It reports problems as diagnostics instead of throwing,
 so **one bad tag or one bad property skips the whole interface**. Nothing renders, in screen space or

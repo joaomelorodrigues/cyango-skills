@@ -42,6 +42,8 @@ Two consequences worth remembering: a patch path almost always goes through `.cu
 
 `hiddenTotally` is the strongest hide and wins over every other flag.
 
+To show or hide an entity at a time of the scene, write keys to `visibilityTrack.keyframes`, not to `visibility`. See [timeline.md](../timeline/timeline.md).
+
 ---
 
 ## Render order

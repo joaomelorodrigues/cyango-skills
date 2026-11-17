@@ -664,6 +664,8 @@ export interface IStory {
   isXrStoreTemplate?: boolean;
   version?: number; // the version of the story
   lastModified?: Date; // the last modified date when the story is updated
+  /** The user whose save last changed the story content. */
+  lastModifiedBy?: string;
   lastPublished?: Date; // the last published date when the story is published
   /**
    * The date the story was first published (never changes on republish)
@@ -705,9 +707,9 @@ export interface IStory {
    */
   isTransfered?: boolean;
   /**
-   * The reference to the story folder that this story belongs to
+   * The reference to the story folder that this story belongs to. Null in an update clears it.
    */
-  storyFolderId?: string;
+  storyFolderId?: string | null;
 
   viverseAppId?: string;
   /**
@@ -985,15 +987,15 @@ export interface IEntity {
   renderOrder?: number;
   entityType: EntityTypes; // the type of the entity
   geometry?: IAnimation<IEntityGeometry>; // the geometry of the entity
-  material?: IAnimation<IEntityMaterial>; // the material of the entity
+  material?: IAnimation<IEntityMaterial, IMaterialKeyValue>; // the material of the entity
   position?: IAnimation<(number | undefined)[]>; // the position of the entity
   rotation?: IAnimation<(number | undefined)[]>; // the rotation of the entity
   scale?: IAnimation<(number | undefined)[]>; // the scale of the entity
   interactable?: IAnimation<boolean>; // if the entity is interactable
   text3D?: IAnimation<IEntityText3D>; // the text of the entity
   assetDomElementId?: string; // the unique dom element id of the asset, it's composed of the asset.id + entity.id.
-  light?: IAnimation<IEntityLight>; // the light of the entity
-  skybox?: IAnimation<IEntitySkybox>; // the skybox of the entity
+  light?: IAnimation<IEntityLight, ILightKeyValue>; // the light of the entity
+  skybox?: IAnimation<IEntitySkybox, ISkyboxKeyValue>; // the skybox of the entity
   audio3D?: IAnimation<IEntityAudio3D>; // the properties of the audio in 3D (not the audio media)
   media?: IAnimation<IMediaClip>; // these are all the videos or audios that were edited and converted in a final media
   actions?: IAnimation<IAction[]>; // the actions of the entity
@@ -1004,17 +1006,18 @@ export interface IEntity {
   children?: IEntity[]; // the children of the entity
   parentEntityId?: string; // if the entity is a child entity, it has a parent entity id, this what distinguishes a child entity from a parent entity
   hdr?: IEntityEnvironment; // the environment of the entity
+  environment?: IEntityEnvironmentTrack; // the timeline keys of the `hdr` settings. The static values stay in `hdr`
   physics?: IEntityPhysics; // the physics of the entity
   model3D?: IEntityModel3D; // 3D model-specific properties
   splat?: IAnimation<IEntitySplat>; // the splat properties of the entity
   uniformScale?: IEntityUniformScale;
   webcam?: IEntityWebcam; // the webcam properties of the entity
   imageTarget?: IEntityImageTarget; // the tracked image properties of an IMAGE_TARGET entity
-  gui?: IAnimation<IEntityGUI>; // the gui properties of the entity
+  gui?: IAnimation<IEntityGUI, IGUIKeyValue>; // the gui properties of the entity
   tooltip?: string; // the tooltip of the entity
   animations?: IAnimation<IEntityAnimation[]>; // the animations of the entity, used for 3D models
   handles?: IEntityHandles; // the handles of the entity to manipulate the entity transforms
-  camera?: IAnimation<IEntityCamera>; // the camera properties of the entity
+  camera?: IAnimation<IEntityCamera, ICameraKeyValue>; // the camera properties of the entity
   mapProperties?: IEntityMapProperties; // the map properties of the entity
   tags?: ITag[]; // the tags of the entity
   teleport?: IEntityTeleport; // the teleport properties of the entity
@@ -1032,6 +1035,8 @@ export interface IEntity {
    * and may return `{ update, dispose }` to animate and clean up.
    */
   customCode?: ICustomCode;
+  codeParams?: IEntityCodeParamsTrack; // the timeline keys of `customCode.params`
+  visibilityTrack?: IEntityVisibilityTrack; // the timeline keys of `visibility`. The static flags stay in `visibility`
   /**
    * If the entity is a placeholder. It means that it won't render anything,
    * but it can be used as group or container to hold other entities.
@@ -1255,6 +1260,10 @@ export interface IEntityAnimation {
   startFrame?: number;
   endFrame?: number;
   fps?: number;
+  // Timeline clips only: trim and speed, same contract as IMediaClip.
+  from?: number; // ms, start of the trimmed content
+  to?: number; // ms, end of the trimmed content
+  speed?: number; // playback rate, default 1
 }
 
 export type UikitStyleNumber =
@@ -1486,6 +1495,24 @@ export interface IEntityTrack {
   text: string;
 }
 
+// The keys of an HDR entity. `hdr` is a plain object, so its keys have their own property.
+export interface IEntityEnvironmentTrack {
+  keyframes?: IKeyframe<IEnvironmentKeyValue>[];
+  excludeFromMasterTimeline?: boolean;
+}
+
+// The keys that show and hide an entity. The stored flags stay in `visibility`.
+export interface IEntityVisibilityTrack {
+  keyframes?: IKeyframe<IVisibilityKeyValue>[];
+  excludeFromMasterTimeline?: boolean;
+}
+
+// The keys of the params of a code block. The stored values stay in `customCode.params`.
+export interface IEntityCodeParamsTrack {
+  keyframes?: IKeyframe<Record<string, unknown>>[];
+  excludeFromMasterTimeline?: boolean;
+}
+
 export interface IEntityEnvironment {
   background?: boolean | 'only';
   blur?: number;
@@ -1522,6 +1549,10 @@ export interface IEntitySplat {
     type: SplatEffectTypes;
     /** Intensity parameter (0-1, default: 0.8) - used by electronic, deep_meditation, waves, disintegrate, burst_disintegrate, splat_flow effects */
     intensity?: number;
+    // Timeline clips only: trim and speed of the effect run, same contract as IMediaClip.
+    from?: number;
+    to?: number;
+    speed?: number;
   };
 }
 
@@ -1953,22 +1984,22 @@ export interface IAnimationLayer {
   isOpen?: boolean; // if the entity layer is open in the editor
 }
 
-// The entity layer is the same as a tween in gsap
-export interface IAnimation<T> {
+// One track of an entity. K is the key value type when it differs from the currentValue type.
+export interface IAnimation<T, K = T> {
   id: string;
-  currentValue: T;
-  keyframes?: IKeyframe<T>[];
-  repeat?: number; // the number of times the animation should repeat, if -1 it will repeat forever
-  excludeFromMasterTimeline?: boolean; // if the animation should be excluded from the master timeline, and only play at action trigger
+  currentValue: T; // the value while the track has no keyframes
+  keyframes?: IKeyframe<K>[];
+  repeat?: number; // reserved, no consumer
+  excludeFromMasterTimeline?: boolean; // the track is not compiled into the master timeline
 }
 
 export interface IKeyframe<T> {
   id: string;
-  startTime: number; // miliseconds reference where the item is relative to the timeline and where it starts
-  endTime: number; // miliseconds when the keyframe should end
-  value: T;
-  ease: gsap.EaseString;
-  connected: boolean;
+  startTime: number; // ms. Point key: the moment the value is reached. Clip: the span start
+  endTime?: number; // ms. Present = clip span. Absent = point key
+  value: T; // per-field tracks store a partial record
+  ease: gsap.EaseString; // shapes the segment that arrives at this key. `steps(1)` = Hold
+  connected?: boolean; // clips only, legacy
 }
 
 // Could be video or audio
@@ -2189,6 +2220,186 @@ export enum PlayingModes {
 }
 ```
 
+## story/scenes/timeline/tracks.ts
+
+```ts
+export const TIMELINE_EASE_PRESETS = [
+  { label: 'Linear', ease: 'none' },
+  { label: 'Ease in', ease: 'power1.in' },
+  { label: 'Ease out', ease: 'power1.out' },
+  { label: 'Ease in-out', ease: 'power1.inOut' },
+  { label: 'Hold', ease: TIMELINE_HOLD_EASE },
+] as const;
+
+export type TimelineTrackProperty =
+  | 'position'
+  | 'rotation'
+  | 'scale'
+  | 'camera'
+  | 'light'
+  | 'material'
+  | 'gui'
+  | 'skybox'
+  | 'environment'
+  | 'codeParams'
+  | 'visibilityTrack'
+  | 'text3D'
+  | 'media'
+  | 'animations'
+  | 'splat'
+  | 'subtitles';
+
+export type TimelineTrackKind = 'point' | 'clip';
+
+// whole: a key stores the full value. field: a key stores only the changed fields.
+export type TimelineKeyMode = 'whole' | 'field' | 'none';
+
+export const CAMERA_KEYABLE_FIELDS = ['position', 'orbitControlsTarget', 'fov'] as const;
+
+export const LIGHT_KEYABLE_FIELDS = [
+  'lightColor',
+  'intensity',
+  'distance',
+  'decay',
+  'angle',
+  'penumbra',
+  'attenuation',
+  'anglePower',
+] as const satisfies readonly (keyof IEntityLight)[];
+
+export const MATERIAL_KEYABLE_FIELDS = [
+  'color',
+  'emissive',
+  'emissiveIntensity',
+  'opacity',
+  'metalness',
+  'roughness',
+] as const satisfies readonly (keyof IEntityMaterial)[];
+
+// The sky shader: haze, tint, and the place of the sun. Not the size of the dome.
+export const SKYBOX_KEYABLE_FIELDS = [
+  'turbidity',
+  'rayleigh',
+  'inclination',
+  'azimuth',
+  'mieCoefficient',
+  'mieDirectionalG',
+] as const satisfies readonly (keyof IEntitySkybox)[];
+
+// The HDR environment: how strong it lights and shows, how soft it shows, and its two rotations.
+export const ENVIRONMENT_KEYABLE_FIELDS = [
+  'environmentIntensity',
+  'backgroundIntensity',
+  'backgroundBlurriness',
+  'environmentRotation',
+  'backgroundRotation',
+] as const satisfies readonly (keyof IEntityEnvironment)[];
+
+// Every switch of the Visibility section. A key shows or hides the entity from its time on.
+export const VISIBILITY_KEYABLE_FIELDS = [
+  'hiddenTotally',
+  'hiddenInDesktop',
+  'hiddenInTablet',
+  'hiddenInMobile',
+  'hiddenInAR',
+  'hiddenInMobileAR',
+  'hiddenInVR',
+  'hiddenInIPhone',
+  'hiddenInIPad',
+  'hiddenInAndroid',
+  'hiddenInPWAAndroid',
+  'hiddenInPWAiOS',
+] as const satisfies readonly (keyof IVisibility)[];
+
+// Transform, opacity and color only. No layout field is keyable.
+export const GUI_KEYABLE_FIELDS = [
+  'transformTranslateX',
+  'transformTranslateY',
+  'transformTranslateZ',
+  'transformRotateX',
+  'transformRotateY',
+  'transformRotateZ',
+  'transformScaleX',
+  'transformScaleY',
+  'backgroundOpacity',
+  'textOpacity',
+  'borderOpacity',
+  'scrollbarOpacity',
+  'backgroundColor',
+  'textColor',
+  'borderColor',
+] as const satisfies readonly (keyof IGUIProperties)[];
+
+export interface ITimelineVec3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+// The camera pose. Legacy keys can miss position and target.
+export interface ICameraKeyValue {
+  position?: ITimelineVec3;
+  orbitControlsTarget?: ITimelineVec3;
+  fov?: number;
+}
+
+export type ILightKeyValue = Partial<Pick<IEntityLight, (typeof LIGHT_KEYABLE_FIELDS)[number]>>;
+
+export type IMaterialKeyValue = Partial<Pick<IEntityMaterial, (typeof MATERIAL_KEYABLE_FIELDS)[number]>>;
+
+// Flat record, the same on every breakpoint and state.
+export type IGUIKeyValue = Partial<Pick<IGUIProperties, (typeof GUI_KEYABLE_FIELDS)[number]>>;
+
+export type ISkyboxKeyValue = Partial<Pick<IEntitySkybox, (typeof SKYBOX_KEYABLE_FIELDS)[number]>>;
+
+// Booleans only: a value holds until the next key.
+export type IVisibilityKeyValue = Partial<Record<(typeof VISIBILITY_KEYABLE_FIELDS)[number], boolean>>;
+
+// A rotation is [x, y, z] in radians, the same as the stored value.
+export interface IEnvironmentKeyValue {
+  environmentIntensity?: number;
+  backgroundIntensity?: number;
+  backgroundBlurriness?: number;
+  environmentRotation?: number[];
+  backgroundRotation?: number[];
+}
+
+export interface ITimelineTrackDefinition {
+  kind: TimelineTrackKind;
+  keyMode: TimelineKeyMode;
+  keyableFields: readonly string[];
+  // The fields are not a fixed list: each entity has its own (the params of a code block).
+  dynamicFields?: boolean;
+  label: string;
+}
+
+const TRANSFORMS = ['position', 'rotation', 'scale'] as const;
+
+// Every entity that draws something can be shown and hidden by keys.
+const VISIBILITY = ['visibilityTrack'] as const;
+
+const OBJECT_3D = [...TRANSFORMS, ...VISIBILITY] as const;
+
+const PRIMITIVE = [...OBJECT_3D, 'material', 'media'] as const;
+
+const LIGHT = [...OBJECT_3D, 'light'] as const;
+
+const GUI = ['gui', ...VISIBILITY] as const;
+
+export interface ITrackStaticPath {
+  property: TimelineTrackProperty;
+  // The path inside the static value. Empty: the whole value.
+  subPath: string[];
+}
+
+export interface IEntityTimelineTracksOptions {
+  // A gui entity that is a 3D root also has transform rows.
+  isGui3DRoot?: boolean;
+  // The parent of the entity is a gui entity, so the gui layout places it.
+  hasGuiParent?: boolean;
+}
+```
+
 ## story/settings/index.ts
 
 ```ts
@@ -2249,5 +2460,68 @@ export enum ThemeTypes {
   ROUTE = 'Route',
   BLANK = 'Blank',
   CUSTOM = 'Custom',
+}
+```
+
+## story/storyVersions/index.ts
+
+```ts
+/** Why a story version was saved. */
+export enum StoryVersionKind {
+  /** The story as it was just before a save that changed it (manual saves and autosaves). */
+  SAVE = 'save',
+  /** Saved on each publish. */
+  PUBLISH = 'publish',
+  /** The draft as it was just before a restore. */
+  RESTORE = 'restore',
+}
+
+/** A story version without its content. */
+export interface IStoryVersionSummary {
+  id: string;
+  storyId: string;
+  kind: StoryVersionKind;
+  name?: string;
+  /** Pinned versions (published, or given a name) are kept until the story is deleted. */
+  isPinned: boolean;
+  /** When the version was saved. */
+  createdAt: string;
+  /** When the captured content was last saved to the draft. */
+  contentSavedAt: string;
+  createdBy?: { id: string; name: string };
+  /** `IStory.version` of the draft that was captured. */
+  sourceStoryVersion?: number;
+  sizeBytes: number;
+  sceneCount: number;
+  assetCount: number;
+  restoredFromVersionId?: string;
+  /** When retention removes this version. Null when it is pinned or the plan keeps it forever. */
+  expiresAt: string | null;
+  canDelete: boolean;
+}
+
+export interface IGetStoryVersionsResponse {
+  versions: IStoryVersionSummary[];
+  hasMore: boolean;
+  /** Days the plan keeps unpinned versions. Null = no limit. */
+  autoVersionRetentionDays: number | null;
+  tier: WorkspaceSubscriptionPlanType;
+}
+
+export interface IGetStoryVersionDetailsResponse {
+  version: IStoryVersionSummary;
+  /** Library assets this version uses that no longer exist. */
+  missingAssetIds: string[];
+  matchesCurrentDraft: boolean;
+}
+
+export interface IRestoreStoryVersionResponse {
+  /** The new `IStory.version` after the restore. */
+  version: number;
+  hasChanges: boolean;
+  /** False when the draft already matched the version. */
+  restored: boolean;
+  missingAssetIds: string[];
+  beforeRestoreVersionId?: string;
 }
 ```
