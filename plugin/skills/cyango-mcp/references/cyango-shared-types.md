@@ -2370,6 +2370,8 @@ export interface ITimelineTrackDefinition {
   keyableFields: readonly string[];
   // The fields are not a fixed list: each entity has its own (the params of a code block).
   dynamicFields?: boolean;
+  // The field that the key button of the row keys while no field has a key.
+  primaryField?: string;
   label: string;
 }
 
