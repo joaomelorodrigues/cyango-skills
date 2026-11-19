@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "cyango",
-  "version": "1.5.27",
+  "version": "1.5.28",
   "description": "Edit a live Cyango xr/studio story: scenes, layout, models, and interactions.",
   "author": {
     "name": "Cyango",
@@ -54,34 +54,34 @@
         "test_cases": {
           "positive": [
             {
-              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. List the scenes of the open story",
-              "prompt": "Name every scene in the story I have open and give each scene type.",
+              "description": "List the scenes. Setup: on a computer, sign in at https://studio.cyango.com with the test account from Review details, open the story Review sample, turn MCP on in Story Settings, and keep that tab open. ChatGPT Web and Mobile then both use that tab.",
+              "prompt": "What scenes are in my open Cyango story? Give the name and type of each scene.",
               "tools_triggered": "list_scenes",
-              "expected_behavior": "Returns the name and type of each scene in the story open in Cyango xr/studio. Nothing in the story changes."
+              "expected_behavior": "The reply lists each scene of the sample story with its name and type, for example Lobby (TOUR_3D). Nothing in the story changes."
             },
             {
-              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Add a scene",
-              "prompt": "Add one 3D tour scene called Gallery.",
+              "description": "Add a scene. Setup: on a computer, sign in at https://studio.cyango.com with the test account from Review details, open the story Review sample, turn MCP on in Story Settings, and keep that tab open. ChatGPT Web and Mobile then both use that tab.",
+              "prompt": "Add a new 3D tour scene called Gallery to my Cyango story.",
               "tools_triggered": "add_scene",
-              "expected_behavior": "Exactly one new TOUR_3D scene titled Gallery appears in the connected editor. The tool reports a verified sceneId; no navigation action or publishing is implied. add_scenes with one row is an equivalent valid implementation."
+              "expected_behavior": "One new TOUR_3D scene called Gallery is added. The reply confirms the name and gives the new scene ID. add_scenes with one row is also correct. If an earlier run added a Gallery scene, a second scene called Gallery is correct."
             },
             {
-              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Build a GUI panel",
-              "prompt": "In the first scene, build a screen-space welcome panel: the title Welcome, the line Explore the gallery. under it, and a Start button below. The button does not need an action yet.",
+              "description": "Add text to a scene. Setup: on a computer, sign in at https://studio.cyango.com with the test account from Review details, open the story Review sample, turn MCP on in Story Settings, and keep that tab open. ChatGPT Web and Mobile then both use that tab.",
+              "prompt": "In the first scene of my Cyango story, add a text on the screen that says Welcome to the gallery.",
               "tools_triggered": "list_scenes, get_scene, add_entities",
-              "expected_behavior": "Under the existing GUI_SCREEN of the first scene, a GUI_CONTAINER panel contains Welcome, Explore the gallery., and a visible Start button in that order. The button is a GUI_CONTAINER with a GUI_TEXT label. Text uses en-US and GUI properties use desktop.default. No click action is required. The tool confirms all created IDs; verify visibility in the editor."
+              "expected_behavior": "One GUI_TEXT entity with the text Welcome to the gallery is added under the GUI_SCREEN of the first scene. The reply confirms the text and gives the new entity ID. Nothing else in the scene changes."
             },
             {
-              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Add and then change a 3D object",
-              "prompt": "In the first scene, put a red sphere on a pedestal, then double every component of the sphere scale. Verify its scale after the change.",
+              "description": "Add a 3D object and change it. Setup: on a computer, sign in at https://studio.cyango.com with the test account from Review details, open the story Review sample, turn MCP on in Story Settings, and keep that tab open. ChatGPT Web and Mobile then both use that tab.",
+              "prompt": "In the first scene of my Cyango story, add a red sphere. Then make it twice as big and tell me its scale before and after.",
               "tools_triggered": "list_scenes, add_entities, update_entities, get_entity",
-              "expected_behavior": "A pedestal and a red sphere appear in the first scene. After one batched update, scale.currentValue has doubled on all three axes compared with the created sphere; material.currentValue.color remains red. The reply reports the verified before/after scale. No geometry-only resize."
+              "expected_behavior": "One red sphere is added to the first scene. Its scale is then doubled on all three axes. The reply gives the sphere ID and the scale before and after the change, for example 1, 1, 1 and then 2, 2, 2. The sphere stays red."
             },
             {
-              "description": "Prerequisites: use a disposable story with a TOUR_3D first scene, signed into the same Cyango account as the plugin; keep xr/studio open with MCP enabled and bridge_status.editorConnected=true. Place a free stock image A configured image provider with working credentials and a free coastline result with author/license metadata is required; verify this before review.",
-              "prompt": "Find a free coastline photograph, place it in the first scene, and tell me the photographer and the license.",
-              "tools_triggered": "list_scenes, list_asset_providers, search_provider_assets, insert_assets",
-              "expected_behavior": "A coastline photograph selected from a configured free image provider is inserted in the first scene with a verified entityId. The reply credits attribution.author and the returned license (and source/license links when present). Do not invent missing credits. If provider access or metadata is unavailable, report that limitation; it is not a passing positive case."
+              "description": "Rename a scene. Setup: on a computer, sign in at https://studio.cyango.com with the test account from Review details, open the story Review sample, turn MCP on in Story Settings, and keep that tab open. ChatGPT Web and Mobile then both use that tab.",
+              "prompt": "Rename the first scene of my Cyango story to Entrance.",
+              "tools_triggered": "list_scenes, update_scene",
+              "expected_behavior": "The first scene is renamed to Entrance, and the reply confirms the new name. update_scenes with one row is also correct. If the first scene is already called Entrance, the reply says so and nothing changes. No other scene changes."
             }
           ],
           "negative": [
